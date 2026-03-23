@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>회의록</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── 기본 변수 (main.html과 동일한 다크 테마) ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-base:#0d0d12; --bg-card:#111118; --bg-secondary:#16161f;
+      --accent:#3b5bdb; --accent-light:#748ffc;
+      --text-primary:#e8eaf6; --text-secondary:#8892b0; --text-muted:#4a5568;
+      --border:#1e2340; --font:'Noto Sans KR',sans-serif;
+    }
+    html, body {
+      height: 100%; margin: 0; padding: 0;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: var(--font);
+      overflow: hidden;
+    }
+
+    /* ── 전체 레이아웃: 헤더 + 바디 ── */
+    #mtg-root {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── 헤더 (4개 박스) ── */
+    #mtg-header {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── 바디 (상세 패널) ── */
+    #mtg-body {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 16px;
+      min-height: 0;
+    }
+
+    /* ── 박스 공통 ── */
+    .mtg-box {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .mtg-box:hover  { border-color: var(--accent-light); }
+    .mtg-box.active { border-color: var(--accent); background: rgba(99,102,241,.08); }
+    .mtg-box-title  { font-size: 12px; font-weight: 700; color: var(--text-primary); flex-shrink: 0; }
+    .mtg-box-body   { flex: 1; overflow: hidden; font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+    .mtg-box-footer { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; margin-top: 4px; }
+
+    /* ── 패널 ── */
+    .mtg-panel { display: none; flex: 1; flex-direction: column; gap: 10px; min-height: 0; }
+    .mtg-panel.active { display: flex; }
+
+    /* ── 버튼 ── */
+    .mtg-btn {
+      padding: 5px 12px; border-radius: 7px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-secondary); font-size: 12px;
+      cursor: pointer; font-family: var(--font); transition: all .12s;
+    }
+    .mtg-btn:hover { border-color: var(--accent-light); color: var(--text-primary); }
+    .mtg-btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .mtg-btn-primary:hover { background: #5254cc; }
+    .mtg-btn-sm {
+      padding: 2px 8px; border-radius: 5px; border: 1px solid var(--accent);
+      background: transparent; color: var(--accent); font-size: 10px;
+      cursor: pointer; font-family: var(--font);
+    }
+
+    /* ── 화자 태그/탭 ── */
+    .mtg-speaker-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--bg-secondary);
+      font-size: 12px; cursor: pointer; transition: all .12s;
+    }
+    .mtg-speaker-tag:hover { border-color: var(--accent-light); }
+    .mtg-speaker-tab {
+      padding: 4px 12px; border-radius: 14px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 12px;
+      cursor: pointer; transition: all .12s; font-family: var(--font);
+    }
+    .mtg-speaker-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── 발언 카드 ── */
+    .mtg-utterance { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+    .mtg-utterance-speaker { font-size: 11px; font-weight: 700; color: var(--accent-light); margin-bottom: 4px; }
+    .mtg-utterance-text    { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
+
+    /* ── 요약본 ── */
+    .mtg-summary-section { margin-bottom: 16px; }
+    .mtg-summary-label   { font-size: 11px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .mtg-summary-items   { display: flex; flex-direction: column; gap: 4px; }
+    .mtg-summary-item    { font-size: 13px; color: var(--text-primary); line-height: 1.6; padding-left: 12px; border-left: 2px solid var(--border); }
+
+    /* ── 보고서 ── */
+    .mtg-report-page         { font-family: var(--font); max-width: 680px; margin: 0 auto; }
+    .mtg-report-title        { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .mtg-report-meta         { font-size: 11px; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .mtg-report-section      { margin-bottom: 16px; }
+    .mtg-report-section-title{ font-size: 13px; font-weight: 700; color: var(--accent-light); margin-bottom: 6px; }
+    .mtg-report-section-body { font-size: 13px; color: var(--text-primary); line-height: 1.7; }
+
+    /* ── 스크롤바 ── */
+    ::-webkit-scrollbar       { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a3060; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div id="mtg-root">
+
+  <!-- ══ 상단: 4개 박스 ══ -->
+  <div id="mtg-header">
+
+    <!-- 박스1: 녹음파일 -->
+    <div class="mtg-box" id="mtg-box-audio" onclick="mtgSelectBox('audio')">
+      <div class="mtg-box-title">🎵 녹음파일</div>
+      <div class="mtg-box-body" id="mtg-audio-preview">
+        <div style="text-align:center;padding:4px 0;">
+          <div style="font-size:22px;margin-bottom:4px;">🎙️</div>
+          <div style="font-size:11px;">파일 없음</div>
+        </div>
+      </div>
+      <!-- 파일 로드 후 표시 영역 -->
+      <div id="mtg-audio-info" style="display:none;flex-direction:column;gap:5px;">
+        <div id="mtg-audio-name" style="font-size:10px;color:var(--accent-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation()">
+          <button id="mtg-play-btn" onclick="mtgTogglePlay()"
+            style="background:var(--accent);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:10px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">▶</button>
+          <div style="flex:1;position:relative;height:4px;background:var(--border);border-radius:2px;cursor:pointer;"
+               onclick="mtgSeek(event,this)" id="mtg-progress-bar">
+            <div id="mtg-progress-fill" style="width:0%;height:100%;background:var(--accent);border-radius:2px;transition:width .1s;"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
+          <span id="mtg-time-current">0:00</span>
+          <span id="mtg-time-remain" style="color:var(--accent-light);">-0:00</span>
+          <span id="mtg-time-total">0:00</span>
+        </div>
+        <div id="mtg-audio-size" style="font-size:10px;color:var(--text-muted);"></div>
+      </div>
+      <audio id="mtg-audio-player" style="display:none"
+        ontimeupdate="mtgAudioTick()"
+        onloadedmetadata="mtgAudioReady()"
+        onended="mtgAudioEnded()"></audio>
+      <div class="mtg-box-footer">
+        <label style="cursor:pointer;font-size:11px;color:var(--accent-light);display:flex;align-items:center;gap:4px;" onclick="event.stopPropagation()">
+          <input type="file" id="mtg-audio-file" accept="audio/*,video/*" style="display:none" onchange="mtgAudioLoaded(this)">
+          📂 파일 선택
+        </label>
+        <span id="mtg-audio-status" style="font-size:10px;color:var(--text-muted);">미선택</span>
+      </div>
+    </div>
+
+    <!-- 박스2: 텍스트 -->
+    <div class="mtg-box" id="mtg-box-text" onclick="mtgSelectBox('text')">
+      <div class="mtg-box-title">📝 텍스트</div>
+      <div class="mtg-box-body" id="mtg-text-preview">
+        <div style="text-align:center;padding:4px 0;">
+          <div style="font-size:22px;margin-bottom:4px;">📋</div>
+          <div style="font-size:11px;">텍스트 없음</div>
+        </div>
+      </div>
+      <div class="mtg-box-footer">
+        <span id="mtg-text-chars" style="font-size:10px;color:var(--text-muted);">0자</span>
+        <span id="mtg-speaker-count" style="font-size:10px;color:var(--text-muted);"></span>
+      </div>
+    </div>
+
+    <!-- 박스3: 요약본 -->
+    <div class="mtg-box" id="mtg-box-summary" onclick="mtgSelectBox('summary')">
+      <div class="mtg-box-title">📊 요약본</div>
+      <div class="mtg-box-body" id="mtg-summary-preview">
+        <div style="text-align:center;padding:4px 0;">
+          <div style="font-size:22px;margin-bottom:4px;">📊</div>
+          <div style="font-size:11px;">요약 없음</div>
+        </div>
+      </div>
+      <div class="mtg-box-footer">
+        <span id="mtg-summary-status" style="font-size:10px;color:var(--text-muted);">-</span>
+        <button class="mtg-btn-sm" id="mtg-btn-summarize"
+          onclick="event.stopPropagation();mtgSummarize()" style="display:none;">⚡ 요약 생성</button>
+      </div>
+    </div>
+
+    <!-- 박스4: 보고서 -->
+    <div class="mtg-box" id="mtg-box-report" onclick="mtgSelectBox('report')">
+      <div class="mtg-box-title">📄 보고서</div>
+      <div class="mtg-box-body" id="mtg-report-preview">
+        <div style="text-align:center;padding:4px 0;">
+          <div style="font-size:22px;margin-bottom:4px;">📄</div>
+          <div style="font-size:11px;">보고서 없음</div>
+        </div>
+      </div>
+      <div class="mtg-box-footer">
+        <span id="mtg-report-status" style="font-size:10px;color:var(--text-muted);">-</span>
+        <button class="mtg-btn-sm" id="mtg-btn-report"
+          onclick="event.stopPropagation();mtgMakeReport()" style="display:none;">📄 보고서 생성</button>
+      </div>
+    </div>
+
+  </div><!-- /#mtg-header -->
+
+  <!-- ══ 하단: 상세 패널 ══ -->
+  <div id="mtg-body">
+
+    <!-- 안내 (기본) -->
+    <div id="mtg-panel-guide" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:12px;">
+      <div style="font-size:36px;">🎙️</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-secondary);">위 박스를 클릭해서 시작하세요</div>
+      <div style="font-size:12px;">텍스트 박스 → 회의 내용 입력 → 요약 생성 → 보고서 완성</div>
+    </div>
+
+    <!-- 패널: 텍스트 입력 -->
+    <div id="mtg-panel-text" class="mtg-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="font-size:13px;font-weight:600;">📝 회의 텍스트 입력</div>
+        <div style="display:flex;gap:8px;">
+          <button class="mtg-btn" onclick="mtgDetectSpeakers()">🔍 화자 자동 감지</button>
+          <button class="mtg-btn mtg-btn-primary" onclick="mtgTextSave()">저장</button>
+        </div>
+      </div>
+      <textarea id="mtg-text-input"
+        placeholder="회의 텍스트를 여기에 붙여넣으세요.&#10;&#10;화자 표시 예시:&#10;[홍길동] 오늘 회의를 시작하겠습니다.&#10;[김철수] 네, 안녕하세요.&#10;&#10;또는 그냥 전체 텍스트를 붙여넣어도 됩니다."
+        style="flex:1;resize:none;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text-primary);font-size:13px;font-family:var(--font);line-height:1.7;outline:none;min-height:0;"
+        oninput="mtgTextChanged()"></textarea>
+      <div id="mtg-speaker-editor" style="display:none;flex-shrink:0;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">감지된 화자 — 이름을 클릭해서 수정하세요</div>
+        <div id="mtg-speaker-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+
+    <!-- 패널: 화자별 발언 -->
+    <div id="mtg-panel-speakers" class="mtg-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="font-size:13px;font-weight:600;">👥 화자별 발언</div>
+        <div style="display:flex;gap:6px;" id="mtg-speaker-tabs"></div>
+      </div>
+      <div id="mtg-speaker-content" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- 패널: 요약본 -->
+    <div id="mtg-panel-summary" class="mtg-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="font-size:13px;font-weight:600;">📊 회의 요약본</div>
+        <button class="mtg-btn mtg-btn-primary" onclick="mtgSummarize()">⚡ 재생성</button>
+      </div>
+      <div id="mtg-summary-content" style="flex:1;overflow-y:auto;"></div>
+    </div>
+
+    <!-- 패널: 보고서 -->
+    <div id="mtg-panel-report" class="mtg-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div style="font-size:13px;font-weight:600;">📄 회의 보고서</div>
+        <div style="display:flex;gap:8px;">
+          <button class="mtg-btn mtg-btn-primary" onclick="mtgMakeReport()">📄 재생성</button>
+          <button class="mtg-btn" onclick="mtgPrintReport()">🖨️ 출력</button>
+        </div>
+      </div>
+      <div id="mtg-report-content"
+        style="flex:1;overflow-y:auto;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:20px;"></div>
+    </div>
+
+  </div><!-- /#mtg-body -->
+
+</div><!-- /#mtg-root -->
+
+<script>
+  let mtgData = {
+    audioFile: null,
+    rawText: '',
+    speakers: {},
+    utterances: [],
+    summary: null,
+    report: null,
+    jobId: null,
+  };
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── 박스 선택 ──
+  function mtgSelectBox(box) {
+    document.querySelectorAll('.mtg-box').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mtg-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('mtg-panel-guide').style.display = 'none';
+    document.getElementById('mtg-box-' + box).classList.add('active');
+
+    if (box === 'audio') {
+      document.getElementById('mtg-panel-text').classList.add('active');
+    } else if (box === 'text') {
+      if (mtgData.utterances.length > 0) {
+        mtgRenderSpeakers();
+        document.getElementById('mtg-panel-speakers').classList.add('active');
+      } else {
+        document.getElementById('mtg-panel-text').classList.add('active');
+      }
+    } else if (box === 'summary') {
+      document.getElementById('mtg-panel-summary').classList.add('active');
+      if (!mtgData.summary) mtgSummarize();
+    } else if (box === 'report') {
+      document.getElementById('mtg-panel-report').classList.add('active');
+      if (!mtgData.report) mtgMakeReport();
+    }
+  }
+
+  // ── 녹음파일: 로드 → 업로드 → STT ──
+  function mtgAudioLoaded(input) {
+    const f = input.files[0];
+    if (!f) return;
+    mtgData.audioFile = f;
+
+    // 로컬 플레이어 연결
+    const player = document.getElementById('mtg-audio-player');
+    player.src = URL.createObjectURL(f);
+    document.getElementById('mtg-audio-preview').style.display = 'none';
+    document.getElementById('mtg-audio-info').style.display = 'flex';
+    document.getElementById('mtg-audio-name').textContent = f.name;
+    document.getElementById('mtg-audio-size').textContent = (f.size/1024/1024).toFixed(1) + ' MB';
+    document.getElementById('mtg-audio-status').textContent = '업로드 중...';
+
+    // 텍스트 패널 열고 진행 상태 표시
+    mtgShowTranscribeBar('업로드 중...', true);
+
+    // 서버 업로드
+    const form = new FormData();
+    form.append('audio', f);
+    fetch('/api/meeting/transcribe', { method: 'POST', body: form })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { mtgShowTranscribeBar('업로드 실패: ' + data.error, false); return; }
+        mtgData.jobId = data.job_id;
+        document.getElementById('mtg-audio-status').textContent = '변환 중...';
+        mtgShowTranscribeBar('변환 중... (small 모델 — 20~30분 소요)', true);
+        mtgPollStatus(data.job_id);
+      })
+      .catch(e => {
+        document.getElementById('mtg-audio-status').textContent = '오류';
+        mtgShowTranscribeBar('오류: ' + e.message, false);
+      });
+  }
+
+  // 2초마다 변환 상태 확인
+  function mtgPollStatus(jobId) {
+    const timer = setInterval(async () => {
+      try {
+        const res  = await fetch('/api/meeting/status/' + jobId);
+        const data = await res.json();
+        const sec  = data.elapsed ? Math.floor(data.elapsed) + '초 경과' : '';
+
+        if (data.status === 'done') {
+          clearInterval(timer);
+          document.getElementById('mtg-audio-status').textContent = '변환 완료 ✓';
+          // 텍스트 자동 입력
+          document.getElementById('mtg-text-input').value = data.text;
+          mtgData.rawText = data.text;
+          mtgTextChanged();
+          mtgUpdatePreviews();
+          document.getElementById('mtg-btn-summarize').style.display = '';
+          mtgShowTranscribeBar('변환 완료 ✅  ' + sec, false);
+          // 텍스트 박스로 자동 이동
+          mtgSelectBox('text');
+
+        } else if (data.status === 'error') {
+          clearInterval(timer);
+          document.getElementById('mtg-audio-status').textContent = '실패';
+          mtgShowTranscribeBar('변환 실패: ' + data.text, false);
+
+        } else {
+          mtgShowTranscribeBar('변환 중... ' + sec, true);
+        }
+      } catch(e) {
+        clearInterval(timer);
+        mtgShowTranscribeBar('폴링 오류: ' + e.message, false);
+      }
+    }, 2000);
+  }
+
+  // 텍스트 패널 상단에 진행 상태 바 표시
+  function mtgShowTranscribeBar(msg, spinning) {
+    let bar = document.getElementById('mtg-transcribe-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'mtg-transcribe-bar';
+      bar.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 12px;' +
+        'background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;' +
+        'font-size:12px;color:var(--accent-light);flex-shrink:0;';
+      const panel = document.getElementById('mtg-panel-text');
+      panel.insertBefore(bar, panel.children[1]);
+    }
+    const spinHtml = '<div style="width:12px;height:12px;border:2px solid var(--border);' +
+      'border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div>';
+    bar.innerHTML = (spinning ? spinHtml : '<span>🎙️</span>') + '<span>' + escapeHtml(msg) + '</span>';
+
+    // 텍스트 패널 열기
+    document.querySelectorAll('.mtg-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('mtg-panel-guide').style.display = 'none';
+    document.getElementById('mtg-panel-text').classList.add('active');
+    document.getElementById('mtg-box-audio').classList.add('active');
+  }
+
+  // ── 오디오 플레이어 ──
+  function mtgAudioReady() {
+    const t = document.getElementById('mtg-audio-player').duration;
+    document.getElementById('mtg-time-total').textContent  = mtgFmtTime(t);
+    document.getElementById('mtg-time-remain').textContent = '-' + mtgFmtTime(t);
+  }
+  function mtgAudioTick() {
+    const p = document.getElementById('mtg-audio-player');
+    const c = p.currentTime, t = p.duration || 0;
+    document.getElementById('mtg-time-current').textContent   = mtgFmtTime(c);
+    document.getElementById('mtg-time-remain').textContent    = '-' + mtgFmtTime(t - c);
+    document.getElementById('mtg-progress-fill').style.width = (t > 0 ? c/t*100 : 0) + '%';
+  }
+  function mtgAudioEnded() {
+    document.getElementById('mtg-play-btn').textContent = '▶';
+    document.getElementById('mtg-audio-player').currentTime = 0;
+    mtgAudioTick();
+  }
+  function mtgTogglePlay() {
+    const p = document.getElementById('mtg-audio-player');
+    const b = document.getElementById('mtg-play-btn');
+    if (p.paused) { p.play(); b.textContent = '⏸'; }
+    else          { p.pause(); b.textContent = '▶'; }
+  }
+  function mtgSeek(event, bar) {
+    const p = document.getElementById('mtg-audio-player');
+    if (!p.duration) return;
+    const rect = bar.getBoundingClientRect();
+    p.currentTime = ((event.clientX - rect.left) / rect.width) * p.duration;
+  }
+  function mtgFmtTime(sec) {
+    if (!isFinite(sec)) return '0:00';
+    return Math.floor(sec/60) + ':' + String(Math.floor(sec%60)).padStart(2,'0');
+  }
+
+  // ── 텍스트 ──
+  function mtgTextChanged() {
+    const txt = document.getElementById('mtg-text-input').value;
+    mtgData.rawText = txt;
+    document.getElementById('mtg-text-chars').textContent = txt.length.toLocaleString() + '자';
+  }
+
+  function mtgTextSave() {
+    const txt = document.getElementById('mtg-text-input').value.trim();
+    if (!txt) { alert('텍스트를 입력해주세요.'); return; }
+    mtgData.rawText = txt;
+    mtgParseUtterances(txt);
+    mtgUpdatePreviews();
+    mtgData.summary = null;
+    mtgData.report  = null;
+    document.getElementById('mtg-btn-summarize').style.display = '';
+    alert('저장되었습니다. 요약 생성 버튼을 눌러보세요.');
+  }
+
+  function mtgParseUtterances(txt) {
+    mtgData.utterances = [];
+    mtgData.speakers   = {};
+    const p1 = /\[([^\]]+)\]\s*:?\s*([^\[]+)/g;
+    let m, matched = false;
+    if ((txt.match(/\[([^\]]+)\]/g) || []).length >= 2) {
+      p1.lastIndex = 0;
+      while ((m = p1.exec(txt)) !== null) {
+        const sp = m[1].trim(), text = m[2].trim();
+        if (!text) continue;
+        if (!mtgData.speakers[sp]) mtgData.speakers[sp] = sp;
+        mtgData.utterances.push({ speaker: sp, text });
+      }
+      matched = true;
+    }
+    if (!matched) {
+      const p2 = /^([가-힣a-zA-Z0-9]{1,10})\s*[:：]\s*(.+)/;
+      txt.split('\n').forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        const m2 = line.match(p2);
+        if (m2) {
+          const sp = m2[1].trim(), text = m2[2].trim();
+          if (!mtgData.speakers[sp]) mtgData.speakers[sp] = sp;
+          mtgData.utterances.push({ speaker: sp, text });
+          matched = true;
+        }
+      });
+    }
+    if (!matched || mtgData.utterances.length === 0) {
+      mtgData.speakers['전체'] = '전체';
+      txt.split('\n').filter(l => l.trim()).forEach(l =>
+        mtgData.utterances.push({ speaker: '전체', text: l.trim() })
+      );
+    }
+  }
+
+  function mtgUpdatePreviews() {
+    const preview = mtgData.rawText.slice(0, 70).replace(/\n/g,' ');
+    document.getElementById('mtg-text-preview').innerHTML =
+      '<div style="font-size:11px;color:var(--text-primary);line-height:1.5;">' +
+      escapeHtml(preview) + (mtgData.rawText.length > 70 ? '…' : '') + '</div>';
+    document.getElementById('mtg-text-chars').textContent = mtgData.rawText.length.toLocaleString() + '자';
+    const n = Object.keys(mtgData.speakers).length;
+    document.getElementById('mtg-speaker-count').textContent = n > 0 ? n + '명' : '';
+  }
+
+  function mtgDetectSpeakers() {
+    const txt = document.getElementById('mtg-text-input').value;
+    if (!txt) { alert('먼저 텍스트를 입력해주세요.'); return; }
+    mtgParseUtterances(txt);
+    const speakers = Object.keys(mtgData.speakers);
+    if (speakers.length === 0 || (speakers.length === 1 && speakers[0] === '전체')) {
+      alert('화자를 감지하지 못했습니다.\n[이름] 또는 이름: 형식으로 작성해주세요.');
+      return;
+    }
+    const editor = document.getElementById('mtg-speaker-editor');
+    const list   = document.getElementById('mtg-speaker-list');
+    editor.style.display = 'block';
+    list.innerHTML = '';
+    speakers.forEach(sp => {
+      const tag = document.createElement('div');
+      tag.className = 'mtg-speaker-tag';
+      tag.innerHTML = '<span>👤</span><span contenteditable="true" style="outline:none;min-width:40px;" ' +
+        'onblur="mtgRenameSpeaker('' + escapeHtml(sp) + '', this.textContent.trim())">' +
+        escapeHtml(mtgData.speakers[sp] || sp) + '</span>';
+      list.appendChild(tag);
+    });
+    document.getElementById('mtg-speaker-count').textContent = speakers.length + '명 감지';
+  }
+
+  function mtgRenameSpeaker(orig, newName) {
+    if (!newName || newName === orig) return;
+    mtgData.speakers[orig] = newName;
+    mtgData.utterances.forEach(u => { if (u.speaker === orig) u.speakerName = newName; });
+  }
+
+  function mtgRenderSpeakers() {
+    const tabs     = document.getElementById('mtg-speaker-tabs');
+    const speakers = [...new Set(mtgData.utterances.map(u => u.speaker))];
+    tabs.innerHTML = '<button class="mtg-speaker-tab active" onclick="mtgFilterSpeaker('all', this)">전체</button>';
+    speakers.forEach(sp => {
+      const name = mtgData.speakers[sp] || sp;
+      tabs.innerHTML += '<button class="mtg-speaker-tab" onclick="mtgFilterSpeaker('' +
+        escapeHtml(sp) + '', this)">' + escapeHtml(name) + '</button>';
+    });
+    mtgFilterSpeaker('all', tabs.querySelector('.active'));
+  }
+
+  function mtgFilterSpeaker(sp, btn) {
+    document.querySelectorAll('.mtg-speaker-tab').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const list = sp === 'all' ? mtgData.utterances : mtgData.utterances.filter(u => u.speaker === sp);
+    document.getElementById('mtg-speaker-content').innerHTML = list.map(u =>
+      '<div class="mtg-utterance">' +
+      '<div class="mtg-utterance-speaker">' + escapeHtml(mtgData.speakers[u.speaker] || u.speaker) + '</div>' +
+      '<div class="mtg-utterance-text">' + escapeHtml(u.text) + '</div></div>'
+    ).join('');
+  }
+
+  // ── 규칙 기반 요약 ──
+  function mtgSummarize() {
+    if (!mtgData.rawText) { alert('텍스트를 먼저 입력/저장해주세요.'); return; }
+    if (mtgData.utterances.length === 0) mtgParseUtterances(mtgData.rawText);
+    const allText   = mtgData.utterances.map(u => u.text).join(' ');
+    const sentences = allText.split(/[.!?。]/g).map(s => s.trim()).filter(s => s.length > 10);
+    const RULES = {
+      background: ['배경','목적','이유','왜냐','기존','현재','상황','현황','도입','시작'],
+      problem:    ['문제','어렵','고충','불편','힘들','부족','없어서','안 되','못 하','어려움','과제','한계','이슈'],
+      opinion:    ['생각','의견','제안','방향','방안','계획','필요','해야','하면','검토','고려','추진'],
+      conclusion: ['결론','결정','확인','완료','마무리','정리','진행','다음','향후','일정','담당','합의'],
+    };
+    const cat = { background:[], problem:[], opinion:[], conclusion:[] };
+    sentences.forEach(sent => {
+      for (const [key, kws] of Object.entries(RULES)) {
+        if (kws.some(kw => sent.includes(kw))) {
+          if (cat[key].length < 4) cat[key].push(sent);
+          break;
+        }
+      }
+    });
+    const overviewSents = [...sentences].sort((a,b) => b.length - a.length).slice(0,3);
+    const speakerHighlights = {};
+    [...new Set(mtgData.utterances.map(u => u.speaker))].forEach(sp => {
+      const longest = mtgData.utterances.filter(u => u.speaker === sp).sort((a,b) => b.text.length - a.text.length)[0];
+      if (longest) speakerHighlights[mtgData.speakers[sp] || sp] = longest.text;
+    });
+    mtgData.summary = { overviewSents, cat, speakerHighlights };
+    mtgRenderSummary();
+    mtgUpdateSummaryPreview();
+    document.getElementById('mtg-btn-report').style.display = '';
+  }
+
+  function mtgRenderSummary() {
+    const s = mtgData.summary;
+    const LABELS = { background:'배경', problem:'문제/고충', opinion:'의견', conclusion:'결론' };
+    let html = '<div class="mtg-summary-section"><div class="mtg-summary-label">📌 개요</div>' +
+      '<div class="mtg-summary-items">' +
+      s.overviewSents.map(t => '<div class="mtg-summary-item">' + escapeHtml(t) + '</div>').join('') +
+      '</div></div>';
+    for (const [key, label] of Object.entries(LABELS)) {
+      if (!s.cat[key] || s.cat[key].length === 0) continue;
+      html += '<div class="mtg-summary-section"><div class="mtg-summary-label">' + label + '</div>' +
+        '<div class="mtg-summary-items">' +
+        s.cat[key].map(t => '<div class="mtg-summary-item">' + escapeHtml(t) + '</div>').join('') +
+        '</div></div>';
+    }
+    const hl = Object.entries(s.speakerHighlights);
+    if (hl.length > 0) {
+      html += '<div class="mtg-summary-section"><div class="mtg-summary-label">👥 화자별 주요 발언</div>' +
+        '<div class="mtg-summary-items">' +
+        hl.map(([sp,t]) => '<div class="mtg-summary-item"><b>' + escapeHtml(sp) + '</b>: ' +
+          escapeHtml(t.slice(0,100)) + (t.length > 100 ? '…' : '') + '</div>').join('') +
+        '</div></div>';
+    }
+    document.getElementById('mtg-summary-content').innerHTML = html;
+    document.getElementById('mtg-panel-summary').classList.add('active');
+  }
+
+  function mtgUpdateSummaryPreview() {
+    const s = mtgData.summary;
+    if (!s) return;
+    const preview = s.overviewSents[0] ? s.overviewSents[0].slice(0,60) : '요약 완료';
+    document.getElementById('mtg-summary-preview').innerHTML =
+      '<div style="font-size:11px;color:var(--text-primary);line-height:1.5;">' + escapeHtml(preview) + '…</div>';
+    document.getElementById('mtg-summary-status').textContent = '생성됨';
+  }
+
+  // ── 보고서 ──
+  function mtgMakeReport() {
+    if (!mtgData.summary) { mtgSummarize(); return; }
+    const s = mtgData.summary;
+    const dateStr = new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric'});
+    const LABELS  = { background:'배경', problem:'문제 및 고충사항', opinion:'주요 의견', conclusion:'결론 및 향후 계획' };
+    let sections = '';
+    for (const [key, label] of Object.entries(LABELS)) {
+      if (!s.cat[key] || s.cat[key].length === 0) continue;
+      sections += '<div class="mtg-report-section"><div class="mtg-report-section-title">▪ ' + label + '</div>' +
+        '<div class="mtg-report-section-body">' +
+        s.cat[key].map((t,i) => (i+1) + '. ' + t).join('<br>') + '</div></div>';
+    }
+    const hl = Object.entries(s.speakerHighlights);
+    if (hl.length > 0) {
+      sections += '<div class="mtg-report-section"><div class="mtg-report-section-title">▪ 참석자별 주요 발언</div>' +
+        '<div class="mtg-report-section-body">' +
+        hl.map(([sp,t]) => '• ' + sp + ': ' + t.slice(0,120) + (t.length > 120 ? '…' : '')).join('<br>') +
+        '</div></div>';
+    }
+    const html = '<div class="mtg-report-page">' +
+      '<div class="mtg-report-title">📄 회의록</div>' +
+      '<div class="mtg-report-meta">작성일: ' + dateStr +
+      ' &nbsp;|&nbsp; 참석자: ' + Object.keys(mtgData.speakers).length +
+      '명 &nbsp;|&nbsp; 발언 수: ' + mtgData.utterances.length + '건</div>' +
+      '<div class="mtg-report-section"><div class="mtg-report-section-title">▪ 개요</div>' +
+      '<div class="mtg-report-section-body">' +
+      s.overviewSents.map((t,i) => (i+1) + '. ' + t).join('<br>') + '</div></div>' +
+      sections +
+      '<div style="margin-top:24px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);">' +
+      '※ 본 보고서는 회의 텍스트를 기반으로 자동 생성되었습니다.</div></div>';
+    mtgData.report = html;
+    document.getElementById('mtg-report-content').innerHTML = html;
+    document.getElementById('mtg-report-preview').innerHTML =
+      '<div style="font-size:11px;color:var(--accent-light);">📄 보고서 생성됨</div>';
+    document.getElementById('mtg-report-status').textContent = '생성됨';
+    document.getElementById('mtg-panel-report').classList.add('active');
+  }
+
+  function mtgPrintReport() {
+    const content = document.getElementById('mtg-report-content').innerHTML;
+    const w = window.open('', '_blank');
+    w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>회의록</title>' +
+      '<style>body{font-family:"맑은 고딕",sans-serif;max-width:700px;margin:40px auto;padding:20px;color:#111;}' +
+      '.mtg-report-title{font-size:20px;font-weight:700;margin-bottom:4px;}' +
+      '.mtg-report-meta{font-size:12px;color:#666;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid #ddd;}' +
+      '.mtg-report-section{margin-bottom:16px;}' +
+      '.mtg-report-section-title{font-size:13px;font-weight:700;color:#3730a3;margin-bottom:6px;}' +
+      '.mtg-report-section-body{font-size:13px;line-height:1.8;}</style>' +
+      '</head><body>' + content + '</body></html>');
+    w.document.close();
+    w.print();
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사내 인트라넷 포털 - 로그인</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #0d0d12;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 배경 이미지 슬라이드쇼 */
+    .bg-slide {
+      position: fixed;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      z-index: 0;
+    }
+    .bg-slide.active { opacity: 0.18; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(13,13,18,0.92) 0%, rgba(14,21,53,0.85) 100%);
+      z-index: 1;
+    }
+
+    .login-card {
+      position: relative;
+      z-index: 2;
+      background: rgba(22, 22, 31, 0.95);
+      border: 1px solid rgba(59, 91, 219, 0.25);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 380px;
+      box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(116, 143, 252, 0.08);
+    }
+
+    .logo-area {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .logo-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #e8ecff;
+      letter-spacing: -0.3px;
+    }
+    .logo-sub {
+      font-size: 16px;
+      color: #748ffc;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #9ba8cc;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(116, 143, 252, 0.2);
+      border-radius: 8px;
+      color: #e8ecff;
+      font-size: 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    input:focus {
+      border-color: #3b5bdb;
+      background: rgba(59, 91, 219, 0.08);
+    }
+
+    .error-msg {
+      background: rgba(220, 53, 69, 0.15);
+      border: 1px solid rgba(220, 53, 69, 0.35);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #ff8fa3;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #3b5bdb, #4c6ef5);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+      letter-spacing: 0.5px;
+    }
+    .btn-login:hover { opacity: 0.9; }
+    .btn-login:active { transform: scale(0.99); }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: #4a5178;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 배경 이미지 슬라이드 (static/images/login_bg/ 폴더 이미지) -->
+  <div class="bg-slide active" id="bg0" style="background-image: url('{{ url_for('static', filename='images/login_bg/bg1.jpg') }}')"></div>
+  <div class="bg-slide" id="bg1" style="background-image: url('{{ url_for('static', filename='images/login_bg/bg2.jpg') }}')"></div>
+  <div class="bg-slide" id="bg2" style="background-image: url('{{ url_for('static', filename='images/login_bg/bg3.jpg') }}')"></div>
+
+  <div class="overlay"></div>
+
+  <div class="login-card">
+    <div class="logo-area">
+      <div class="logo-title">🔬 두원공조 연구소</div>
+      <div class="logo-sub">[AI-Do] 사내 인트라넷 포털</div>
+    </div>
+
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="form-group">
+        <label for="username">아이디</label>
+        <input type="text" id="username" name="username" placeholder="아이디를 입력하세요" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-login">로그인</button>
+    </form>
+
+    <div class="login-footer">© 2026 연구소 AI TFT</div>
+  </div>
+
+  <script>
+    // 배경 이미지 슬라이드쇼
+    const slides = document.querySelectorAll('.bg-slide');
+    let current = 0;
+    if (slides.length > 1) {
+      setInterval(() => {
+        slides[current].classList.remove('active');
+        current = (current + 1) % slides.length;
+        slides[current].classList.add('active');
+      }, 5000);
+    }
+
+    // Enter 키 로그인
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        document.querySelector('.btn-login').click();
+      }
+    });
+  </script>
+</body>
+</html>

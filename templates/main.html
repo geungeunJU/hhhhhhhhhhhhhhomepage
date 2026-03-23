@@ -1,0 +1,1643 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI TFT 인트라넷 포털</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-base:#0d0d12; --bg-card:#111118; --bg-card2:#16161f;
+      --sidebar-bg:#0e1535; --sidebar-hover:#1a2755; --sidebar-active:#1e3a8a;
+      --accent:#3b5bdb; --accent-light:#748ffc;
+      --text-primary:#e8eaf6; --text-secondary:#8892b0; --text-muted:#4a5568;
+      --border:#1e2340; --font:'Noto Sans KR',sans-serif;
+    }
+    body { font-family:var(--font); background:var(--bg-base); color:var(--text-primary); display:flex; height:100vh; overflow:hidden; }
+    #sidebar { width:12.5%; min-width:140px; background:var(--sidebar-bg); display:flex; flex-direction:column; height:100vh; overflow-y:auto; overflow-x:hidden; border-right:1px solid var(--border); flex-shrink:0; }
+    .sidebar-logo { padding:18px 14px 14px; font-size:15px; font-weight:700; color:var(--accent-light); letter-spacing:.02em; border-bottom:1px solid var(--border); }
+    .sidebar-logo span { display:block; font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .sidebar-meta { padding:8px 14px; border-bottom:1px solid var(--border); }
+    .sidebar-meta .date-str { font-size:12px; color:var(--text-secondary); }
+    .sidebar-meta .visitor-str { font-size:12px; color:var(--accent-light); margin-top:3px; }
+    .sidebar-menu { flex:1; padding:8px 0; }
+    .menu-item { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; font-size:14px; color:var(--text-secondary); cursor:pointer; transition:background .15s,color .15s; user-select:none; }
+    .menu-item:hover { background:var(--sidebar-hover); color:var(--text-primary); }
+    .menu-item.active { background:var(--sidebar-active); color:#fff; }
+    .menu-item .menu-icon { margin-right:6px; font-size:13px; flex-shrink:0; }
+    .menu-item .menu-arrow { font-size:12px; transition:transform .2s; flex-shrink:0; }
+    .menu-item.open .menu-arrow { transform:rotate(90deg); }
+    .submenu { max-height:0; overflow:hidden; transition:max-height .25s ease; background:rgba(0,0,0,.2); }
+    .submenu.open { max-height:600px; }
+    .submenu-item { padding:6px 14px 6px 32px; font-size:13px; color:var(--text-muted); cursor:pointer; transition:background .12s,color .12s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .submenu-item:hover { background:var(--sidebar-hover); color:var(--text-primary); }
+    .submenu-item.active { background:var(--accent); color:#fff; }
+    .sidebar-bottom { padding:10px 0; border-top:1px solid var(--border); }
+    .sidebar-bottom .menu-item { font-size:12px; }
+    .sidebar-logout { padding:6px 14px; font-size:14px; color:var(--text-muted); cursor:pointer; transition:color .15s; }
+    .sidebar-logout:hover { color:#fc8181; }
+    #main { flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    #topbar { height:46px; background:var(--bg-card); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0; gap:10px; }
+    .topbar-title { font-size:14px; font-weight:500; color:var(--text-primary); flex:1; }
+    .topbar-meta { font-size:13px; color:var(--text-muted); display:flex; align-items:center; gap:12px; }
+    .topbar-badge { font-size:13px; padding:2px 8px; border-radius:10px; background:var(--accent); color:#fff; }
+    #content-area { flex:1; overflow-y:auto; padding:24px; }
+    .section-card { display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .section-card.active { display:flex; flex-direction:column; min-height:calc(100vh - 94px); }
+    .section-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .section-header h2 { font-size:16px; font-weight:600; }
+    .section-header .badge { background:var(--accent); color:#fff; font-size:10px; padding:2px 8px; border-radius:20px; }
+    .feature-layout { display:flex; flex:1; overflow:hidden; }
+    .file-panel { width:260px; flex-shrink:0; border-right:1px solid var(--border); overflow-y:auto; background:var(--bg-card2); }
+    .file-panel-header { padding:12px 16px; font-size:12px; font-weight:600; color:var(--accent-light); border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg-card2); z-index:1; }
+    .file-list-empty { padding:24px 16px; font-size:12px; color:var(--text-muted); text-align:center; }
+    .file-item { padding:9px 16px; font-size:11.5px; color:var(--text-secondary); cursor:pointer; border-bottom:1px solid rgba(255,255,255,.03); transition:background .12s,color .12s; word-break:break-all; }
+    .file-item:hover { background:var(--sidebar-hover); color:var(--text-primary); }
+    .file-item.active { background:var(--accent); color:#fff; }
+    .content-panel { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+    .content-panel-header { padding:10px 16px; font-size:12px; color:var(--text-muted); border-bottom:1px solid var(--border); background:var(--bg-card2); flex-shrink:0; }
+    .content-panel-body { flex:1; overflow-y:auto; padding:20px; }
+    .html-frame { width:100%; height:100%; border:none; background:#fff; border-radius:6px; min-height:500px; }
+    .loading-spinner { display:flex; flex-direction:column; align-items:center; justify-content:center; height:200px; gap:12px; color:var(--text-muted); font-size:13px; }
+    .spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .placeholder-msg { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; color:var(--text-muted); font-size:13px; gap:10px; }
+    .placeholder-msg .big-icon { font-size:36px; }
+    .home-layout { display:flex; flex-wrap:wrap; gap:20px; padding:24px; align-content:flex-start; flex:1; }
+    .card { background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:20px; }
+    .card-title { font-size:13px; font-weight:700; color:var(--accent-light); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+    .notice-list { list-style:none; }
+    .notice-list li { display:flex; align-items:baseline; gap:6px; padding:7px 0; border-bottom:1px dashed rgba(116,143,252,.12); cursor:pointer; transition:color .15s; font-size:12px; }
+    .notice-list li:last-child { border-bottom:none; }
+    .notice-list li:hover .notice-title { color:var(--accent-light); }
+    .notice-title { flex:1; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .notice-sep { color:var(--text-muted); font-size:10px; }
+    .notice-date { color:var(--text-muted); font-size:10px; white-space:nowrap; }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:var(--bg-card2); border:1px solid var(--border); border-radius:12px; padding:28px; width:600px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 16px 64px rgba(0,0,0,.6); }
+    .modal-header { display:flex; align-items:center; margin-bottom:16px; }
+    .modal-title { font-size:15px; font-weight:700; flex:1; }
+    .modal-close { background:none; border:none; color:var(--text-muted); font-size:18px; cursor:pointer; padding:4px; }
+    .modal-close:hover { color:var(--text-primary); }
+    .modal-body { flex:1; overflow-y:auto; font-size:13px; line-height:1.8; color:var(--text-secondary); white-space:pre-wrap; }
+    .wip-section { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:16px; color:var(--text-muted); min-height:300px; }
+    .wip-section .wip-icon { font-size:52px; }
+    .wip-section .wip-title { font-size:18px; font-weight:600; color:var(--text-secondary); }
+    .wip-section .wip-desc { font-size:13px; color:var(--text-muted); }
+    ::-webkit-scrollbar { width:4px; height:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#2a3060; border-radius:2px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--accent); }
+    .loading-msg { color:#7986cb; font-size:13px; padding:16px 0; }
+    .btn-accent { background:#3b5bdb; color:#fff; border:none; padding:8px 18px; border-radius:6px; cursor:pointer; font-size:13px; font-family:'Noto Sans KR',sans-serif; }
+    .btn-accent:hover { background:#4c6ef5; }
+    .btn-sm { background:#1e3a8a; color:#aab4fb; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:12px; }
+    .filter-bar { background:#16161f; border-radius:10px; padding:14px 18px; margin-bottom:20px; }
+    .filter-group { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .filter-label { color:#748ffc; font-size:12px; min-width:28px; }
+    .filter-pills { display:flex; gap:8px; flex-wrap:wrap; }
+    .filter-pill { background:#1e2a4a; color:#aab4fb; border:1px solid #2a3a6a; padding:4px 14px; border-radius:20px; font-size:12px; cursor:pointer; transition:all .2s; }
+    .filter-pill:hover { background:#1a2755; }
+    .filter-pill.active { background:#3b5bdb; color:#fff; border-color:#3b5bdb; }
+    .patents-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+    .patent-card { background:#16161f; border:1px solid #1e2a4a; border-radius:10px; padding:16px; cursor:pointer; transition:all .2s; }
+    .patent-card:hover { border-color:#3b5bdb; transform:translateY(-2px); }
+    .patent-card-icon { font-size:28px; margin-bottom:10px; }
+    .patent-card-title { font-size:13px; color:#c5cae9; font-weight:600; margin-bottom:8px; word-break:break-all; }
+    .patent-badges { display:flex; gap:6px; flex-wrap:wrap; }
+    .badge-company { background:#1a2755; color:#748ffc; }
+    .badge-product { background:#1a3a2a; color:#69db7c; }
+    .badge-etc { background:#2a2a3a; color:#9e9e9e; }
+    .no-results { color:#555; font-size:13px; text-align:center; padding:40px; grid-column:1/-1; }
+    #pdf-modal { position:fixed; inset:0; background:rgba(0,0,0,.75); align-items:center; justify-content:center; z-index:1000; }
+    .pdf-modal-container { background:#111118; border-radius:12px; width:88vw; height:90vh; overflow:hidden; display:flex; flex-direction:column; }
+    .pdf-modal-header { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-bottom:1px solid #1e2a4a; }
+    .pdf-modal-title { color:#c5cae9; font-size:14px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .modal-close-btn { background:none; border:none; color:#748ffc; font-size:18px; cursor:pointer; padding:0 4px; }
+    .dataviz-layout { display:flex; gap:16px; height:calc(100vh - 180px); padding:20px; }
+    .dataviz-sidebar { width:220px; min-width:180px; background:#111118; border-radius:10px; padding:14px; overflow-y:auto; flex-shrink:0; }
+    .dataviz-main { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
+    .dv-panel { background:#16161f; border-radius:10px; padding:16px; border:1px solid #1e2a4a; }
+    .dv-panel-title { font-size:14px; font-weight:600; color:#aab4fb; }
+    .dv-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .dv-shape-info { font-size:12px; color:#555; }
+    .dv-file-list { display:flex; flex-direction:column; gap:4px; margin-top:10px; }
+    .dv-file-item { background:#1a1a24; color:#9e9e9e; font-size:12px; padding:8px 10px; border-radius:6px; cursor:pointer; border:1px solid transparent; transition:all .15s; word-break:break-all; }
+    .dv-file-item:hover { background:#1e2a4a; color:#c5cae9; }
+    .dv-file-item.active { background:#1e3a8a; color:#fff; border-color:#3b5bdb; }
+    .dv-table-wrap { overflow:auto; max-height:280px; border-radius:6px; }
+    .dv-table { border-collapse:collapse; font-size:12px; width:100%; }
+    .dv-table th { background:#0e1535; color:#748ffc; padding:6px 12px; text-align:left; white-space:nowrap; position:sticky; top:0; }
+    .dv-table td { padding:5px 12px; color:#bdbdbd; border-bottom:1px solid #1a1a2a; white-space:nowrap; }
+    .dv-table tr:hover td { background:#1a1a2a; }
+    .dv-recommend-list { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .dv-rec-card { background:#111118; border:1px solid #1e2a4a; border-radius:8px; padding:12px 16px; cursor:pointer; width:200px; transition:all .2s; }
+    .dv-rec-card:hover { border-color:#3b5bdb; }
+    .dv-rec-type { font-size:11px; color:#748ffc; margin-bottom:4px; text-transform:uppercase; }
+    .dv-rec-title { font-size:13px; color:#c5cae9; font-weight:600; margin-bottom:4px; }
+    .dv-rec-reason { font-size:11px; color:#666; }
+    .dv-manual-form { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-top:12px; }
+    .dv-form-row { display:flex; flex-direction:column; gap:4px; }
+    .dv-form-row label { font-size:11px; color:#748ffc; }
+    .dv-form-row select { background:#0e1535; color:#c5cae9; border:1px solid #1e2a4a; border-radius:6px; padding:6px 10px; font-size:12px; font-family:'Noto Sans KR',sans-serif; }
+    #section-patents .section-header { padding:16px 20px; }
+    #section-patents #patents-filter-bar, #section-patents #patents-list { margin:0 20px 20px; }
+    .compare-body { padding:28px 32px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:20px; }
+    .compare-upload-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .upload-panel { background:#16161f; border:2px dashed #2e3a6e; border-radius:10px; padding:20px; display:flex; flex-direction:column; gap:12px; transition:border-color .2s; }
+    .upload-panel.dragover { border-color:#3b5bdb; background:#1a1f35; }
+    .upload-label { font-size:13px; font-weight:600; color:#748ffc; }
+    .drop-zone { background:#0d0d12; border:1px dashed #3b5bdb; border-radius:8px; padding:24px 16px; text-align:center; cursor:pointer; transition:background .2s; position:relative; }
+    .drop-zone:hover { background:#111a35; }
+    .drop-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .drop-zone-icon { font-size:28px; margin-bottom:8px; color:#3b5bdb; }
+    .drop-zone-text { font-size:12px; color:#888; }
+    .drop-zone-text span { color:#748ffc; font-weight:600; }
+    .drop-zone-filename { margin-top:8px; font-size:12px; color:#a0c4ff; word-break:break-all; display:none; }
+    .panel-textarea { width:100%; min-height:160px; background:#0d0d12; border:1px solid #2e3a6e; border-radius:8px; color:#ddd; font-size:12px; padding:10px; resize:vertical; box-sizing:border-box; font-family:'Noto Sans KR',monospace; line-height:1.6; }
+    .panel-textarea:focus { outline:none; border-color:#3b5bdb; }
+    .panel-or { text-align:center; font-size:11px; color:#555; position:relative; }
+    .panel-or::before,.panel-or::after { content:''; position:absolute; top:50%; width:40%; height:1px; background:#2a2a3e; }
+    .panel-or::before { left:0; } .panel-or::after { right:0; }
+    .compare-action-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .btn-compare { background:#3b5bdb; color:#fff; border:none; border-radius:8px; padding:10px 28px; font-size:13px; font-weight:600; cursor:pointer; transition:background .2s; font-family:'Noto Sans KR',sans-serif; }
+    .btn-compare:hover { background:#2f4ac5; } .btn-compare:disabled { background:#2a2a3e; color:#555; cursor:not-allowed; }
+    .btn-reset { background:transparent; color:#888; border:1px solid #2e3a6e; border-radius:8px; padding:10px 20px; font-size:12px; cursor:pointer; transition:border-color .2s,color .2s; font-family:'Noto Sans KR',sans-serif; }
+    .btn-reset:hover { border-color:#748ffc; color:#748ffc; }
+    .compare-status { font-size:12px; color:#888; flex:1; text-align:right; }
+    .similarity-badge { display:none; align-items:center; gap:8px; background:#16161f; border:1px solid #2e3a6e; border-radius:20px; padding:6px 16px; font-size:13px; }
+    .similarity-badge.show { display:flex; }
+    .sim-label { color:#888; } .sim-value { font-weight:700; font-size:16px; }
+    .sim-high { color:#51cf66; } .sim-mid { color:#fcc419; } .sim-low { color:#ff6b6b; }
+    .compare-result { display:none; flex-direction:column; gap:12px; }
+    .compare-result.show { display:flex; }
+    .result-header { display:flex; align-items:center; gap:12px; font-size:13px; color:#aaa; padding-bottom:8px; border-bottom:1px solid #2a2a3e; flex-wrap:wrap; }
+    .legend { display:flex; gap:12px; flex-wrap:wrap; margin-left:auto; }
+    .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:#aaa; }
+    .legend-dot { width:14px; height:14px; border-radius:3px; display:inline-block; }
+    .legend-add { background:rgba(81,207,102,.35); border:1px solid #51cf66; }
+    .legend-del { background:rgba(255,107,107,.25); border:1px solid #ff6b6b; }
+    .diff-columns { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .diff-col-title { font-size:12px; color:#748ffc; font-weight:600; margin-bottom:8px; }
+    .diff-box { background:#0d0d12; border:1px solid #2e3a6e; border-radius:8px; padding:16px; font-size:12px; line-height:1.8; white-space:pre-wrap; word-break:break-all; max-height:480px; overflow-y:auto; color:#ccc; }
+    .diff-ins { background:rgba(81,207,102,.25); border-bottom:2px solid #51cf66; color:#d4f5dc; border-radius:2px; }
+    .diff-del { background:rgba(255,107,107,.2); text-decoration:line-through; color:#ffaaaa; border-radius:2px; }
+    .diff-eq { color:#ccc; }
+    .compare-loading { display:none; align-items:center; gap:10px; color:#748ffc; font-size:13px; }
+    .compare-loading.show { display:flex; }
+    .compare-loading .spinner { width:18px; height:18px; border-width:2px; }
+    /* ── 뉴스 ── */
+    .news-toolbar { display:flex; align-items:flex-start; gap:0; padding:12px 20px; border-bottom:1px solid var(--border); background:var(--bg-card2); flex-wrap:wrap; flex-direction:column; position:relative; }
+    .news-toolbar-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:4px 0; }
+    .news-toolbar-label { font-size:11px; font-weight:700; color:var(--text-muted); min-width:64px; flex-shrink:0; }
+    .news-toolbar-sep { width:100%; height:1px; background:var(--border); margin:4px 0; }
+    .news-tab { padding:4px 12px; border-radius:14px; border:1px solid var(--border); font-size:12px; color:var(--text-muted); cursor:pointer; background:transparent; font-family:var(--font); transition:all .15s; }
+    .news-tab:hover { border-color:var(--accent-light); color:var(--text-primary); }
+    .news-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .news-fetch-btn { padding:6px 16px; border-radius:20px; border:none; font-size:12px; background:#22c55e; color:#fff; cursor:pointer; font-family:var(--font); flex-shrink:0; }
+    .news-fetch-btn:hover { background:#16a34a; }
+    .news-fetch-btn:disabled { background:#374151; color:#6b7280; cursor:not-allowed; }
+    .news-filter-setting-btn { padding:6px 14px; border-radius:20px; border:1px solid var(--border); font-size:12px; background:transparent; color:var(--text-muted); cursor:pointer; font-family:var(--font); flex-shrink:0; }
+    .news-filter-setting-btn:hover { border-color:var(--accent-light); color:var(--text-primary); }
+    .news-status-bar { display:flex; align-items:center; justify-content:space-between; padding:7px 20px; background:rgba(59,91,219,.05); border-bottom:1px solid var(--border); gap:12px; }
+    .news-status-text { font-size:11px; color:var(--text-muted); }
+    .news-status-text .status-ok   { color:#22c55e; }
+    .news-status-text .status-old  { color:#f59e0b; }
+    .news-status-text .status-busy { color:var(--accent-light); }
+    .news-body { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px; }
+    .news-card { background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; transition:border-color .15s; }
+    .news-card:hover { border-color:var(--accent-light); }
+    .news-card-header { padding:14px 18px 10px; border-bottom:1px solid var(--border); }
+    .news-meta { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .news-source { font-size:11px; background:var(--accent); color:#fff; padding:2px 8px; border-radius:10px; }
+    .news-keyword { font-size:11px; background:#065f46; color:#6ee7b7; padding:2px 8px; border-radius:10px; }
+    .news-date { font-size:11px; color:var(--text-muted); }
+    .news-title { font-size:14px; font-weight:600; color:var(--text-primary); }
+    .news-summary { padding:10px 18px; font-size:13px; color:var(--text-secondary); line-height:1.7; background:rgba(59,91,219,.06); }
+    .news-summary-label { font-size:11px; font-weight:700; color:var(--accent-light); margin-bottom:4px; }
+    .news-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:60px 20px; color:var(--text-muted); font-size:13px; }
+    .news-empty .big-icon { font-size:40px; }
+    .news-loading { display:flex; align-items:center; justify-content:center; gap:12px; padding:60px 20px; color:var(--accent-light); font-size:14px; }
+    .news-cache-notice { text-align:center; font-size:11px; color:var(--text-muted); padding:8px; background:rgba(255,200,0,.05); border-radius:6px; border:1px solid rgba(255,200,0,.15); }
+    /* ── 뉴스 기사 모달 ── */
+    .news-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:2000; align-items:center; justify-content:center; }
+    .news-modal-overlay.open { display:flex; }
+    /* 필터 설정 모달 */
+    .filter-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:3000; align-items:center; justify-content:center; }
+    .filter-modal-overlay.open { display:flex; }
+    .filter-modal-box { background:var(--bg-card2); border:1px solid var(--border); border-radius:12px; width:560px; max-width:92vw; max-height:85vh; overflow-y:auto; padding:24px; box-shadow:0 16px 64px rgba(0,0,0,.6); }
+    .filter-modal-header { display:flex; justify-content:space-between; align-items:center; font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:12px; }
+    .filter-section-label { font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:8px; }
+    .filter-tags { display:flex; flex-wrap:wrap; gap:6px; min-height:36px; margin-bottom:10px; }
+    .filter-tag { display:flex; align-items:center; gap:4px; padding:4px 10px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px; font-size:12px; color:var(--text-primary); }
+    .filter-tag button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:13px; padding:0; line-height:1; }
+    .filter-tag button:hover { color:#ef4444; }
+    .filter-input-row { display:flex; gap:8px; }
+    .filter-input-row input { flex:1; padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-primary); font-size:13px; font-family:var(--font); }
+    .filter-input-row button { padding:6px 14px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-size:13px; cursor:pointer; font-family:var(--font); }
+    .filter-modal-footer { display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding-top:16px; border-top:1px solid var(--border); }
+    .filter-save-btn { padding:8px 24px; border-radius:8px; border:none; background:#22c55e; color:#fff; font-size:13px; cursor:pointer; font-family:var(--font); font-weight:600; }
+    .news-modal-box { background:var(--bg-card2); border:1px solid var(--border); border-radius:12px; width:780px; max-width:90vw; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 16px 64px rgba(0,0,0,.6); }
+    .news-modal-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:12px; }
+    .news-modal-title { flex:1; font-size:15px; font-weight:700; color:var(--text-primary); line-height:1.5; }
+    .news-modal-close { background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer; flex-shrink:0; padding:0 4px; }
+    .news-modal-close:hover { color:var(--text-primary); }
+    .news-modal-meta { padding:10px 20px; border-bottom:1px solid var(--border); display:flex; gap:8px; align-items:center; background:rgba(59,91,219,.06); }
+    .news-modal-body { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px; }
+    .news-modal-summary { background:rgba(59,91,219,.08); border-left:3px solid var(--accent); border-radius:4px; padding:12px 16px; font-size:13px; color:var(--text-secondary); line-height:1.8; }
+    .news-modal-summary-label { font-size:11px; font-weight:700; color:var(--accent-light); margin-bottom:6px; }
+    .news-modal-images { display:flex; gap:10px; flex-wrap:wrap; }
+    .news-modal-img-wrap { display:flex; flex-direction:column; gap:4px; }
+    .news-modal-img-wrap img { width:220px; height:145px; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
+    .news-modal-img-caption { font-size:10px; color:var(--text-muted); max-width:220px; }
+    .news-modal-fulltext { font-size:13px; line-height:1.9; color:var(--text-secondary); white-space:pre-wrap; }
+    .news-modal-tables table { border-collapse:collapse; font-size:12px; width:100%; margin-bottom:8px; }
+    .news-modal-tables th { background:#0e1535; color:var(--accent-light); padding:6px 10px; text-align:left; }
+    .news-modal-tables td { padding:5px 10px; color:#bdbdbd; border-bottom:1px solid #1a1a2a; }
+    .news-modal-link { display:flex; gap:16px; justify-content:flex-end; padding-top:8px; flex-wrap:wrap; }
+    .news-modal-link a { font-size:12px; color:var(--accent-light); text-decoration:none; cursor:pointer; }
+    .news-modal-link a:hover { text-decoration:underline; }
+    .news-modal-loading { display:flex; align-items:center; gap:10px; padding:16px; color:var(--accent-light); font-size:13px; }
+    .news-modal-loading .spinner { width:18px; height:18px; border-width:2px; }
+
+
+  </style>
+</head>
+<body>
+
+<!-- 뉴스 기사 모달 (body 최상단) -->
+<!-- ════ 관리모드 모달 (admin 전용) ════ -->
+<div class="filter-modal-overlay" id="admin-panel-overlay" onclick="closeAdminPanel(event)">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;width:480px;max-width:96vw;padding:28px 28px 20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:16px;font-weight:700;color:var(--text-primary);">⚙️ 관리모드 — 기능 표시 설정</div>
+      <button onclick="closeAdminPanel()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">토글을 켜면 사이드바에 해당 기능이 표시됩니다.</div>
+    <div id="admin-feature-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+    <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:8px;">
+      <button onclick="closeAdminPanel()" style="padding:7px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-size:13px;">닫기</button>
+      <button onclick="applyAdminFeatures()" style="padding:7px 18px;border-radius:8px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:600;">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 필터 설정 모달 (admin 전용) ════ -->
+<div class="filter-modal-overlay" id="filter-modal" onclick="closeFilterModal(event)">
+  <div class="filter-modal-box" onclick="event.stopPropagation()">
+    <div class="filter-modal-header">
+      <span>⚙️ 뉴스 2차 필터 단어 설정</span>
+      <button onclick="document.getElementById('filter-modal').classList.remove('open')" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;">×</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 16px;">수집된 기사 제목에 아래 단어 중 하나라도 있어야 표시됩니다. 단어를 추가하거나 × 버튼으로 삭제하세요.</p>
+
+    <div class="filter-section-label">📰 키워드 뉴스 필터 (공조 시스템·컴프레서·냉각수밸브·차량열관리)</div>
+    <div class="filter-tags" id="filter-tags-keyword"></div>
+    <div class="filter-input-row">
+      <input type="text" id="filter-input-keyword" placeholder="단어 입력 후 Enter" onkeydown="addFilterWord('keyword', event)">
+      <button onclick="addFilterWord('keyword')">추가</button>
+    </div>
+
+    <div class="filter-section-label" style="margin-top:20px;">🚗 자동차 뉴스 필터 (전기차·하이브리드·수소전기차·자율주행·배터리)</div>
+    <div class="filter-tags" id="filter-tags-car"></div>
+    <div class="filter-input-row">
+      <input type="text" id="filter-input-car" placeholder="단어 입력 후 Enter" onkeydown="addFilterWord('car', event)">
+      <button onclick="addFilterWord('car')">추가</button>
+    </div>
+
+    <div class="filter-modal-footer">
+      <span id="filter-save-msg" style="font-size:12px;color:#22c55e;"></span>
+      <button class="filter-save-btn" onclick="saveFilterSettings()">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="news-modal-overlay" id="news-modal">
+  <div class="news-modal-box">
+    <div class="news-modal-header">
+      <div class="news-modal-title" id="news-modal-title"></div>
+      <button class="news-modal-close" onclick="closeNewsModal()">✕</button>
+    </div>
+    <div class="news-modal-meta" id="news-modal-meta"></div>
+    <div class="news-modal-body" id="news-modal-body"></div>
+  </div>
+</div>
+
+<nav id="sidebar">
+  <div class="sidebar-logo">🤖 두원공조<span>[두원 AI] I-Do</span></div>
+  <div class="sidebar-meta">
+    <div class="date-str" id="sidebar-date">로딩 중...</div>
+    <div class="visitor-str" id="sidebar-visitors">접속자: —</div>
+  </div>
+  <div class="sidebar-menu">
+    <div class="menu-item" onclick="showSection('home')"><span><span class="menu-icon">🏠</span>홈</span></div>
+    <div class="menu-item" id="menu-news" onclick="toggleMenu('news')"><span><span class="menu-icon">📰</span>뉴스</span><span class="menu-arrow">▶</span></div>
+    <div class="submenu" id="submenu-news">
+      <div class="submenu-item" onclick="loadNews('keyword')">🔍 키워드 뉴스</div>
+      <div class="submenu-item" onclick="loadNews('front')">📄 신문사 뉴스</div>
+      <div class="submenu-item" onclick="loadNews('car')">🚗 자동차 뉴스</div>
+      {% if role == 'admin' %}
+      <div class="submenu-item" onclick="showFilterSettings()" style="margin-top:6px;border-top:1px solid var(--border);padding-top:6px;color:var(--accent-light);">⚙️ 필터 단어 설정</div>
+      {% endif %}
+    </div>
+    <div class="menu-item" id="menu-research" onclick="toggleMenu('research')"><span><span class="menu-icon">📚</span>자동차 연구자료·논문</span><span class="menu-arrow">▶</span></div>
+    <div class="submenu" id="submenu-research">
+      <div class="submenu-item" onclick="setResearchActive(this); loadTrend('KATECH')">🔬 자동차연구원 산업동향</div>
+      <div class="submenu-item" onclick="setResearchActive(this); loadAJMenu()">📖 한국자동차공학회 오토저널</div>
+      <div class="submenu-item" onclick="setResearchActive(this); loadKDIMenu()">📑 한국개발연구원</div>
+    </div>
+    <div class="menu-item" id="menu-aircon" onclick="toggleMenu('aircon')"><span><span class="menu-icon">❄️</span>차량 공조업체 뉴스</span><span class="menu-arrow">▶</span></div>
+    <div class="submenu" id="submenu-aircon">
+      <div class="submenu-item" onclick="loadAircon('doowon')">두원</div>
+      <div class="submenu-item" onclick="loadAircon('hanon')">한온시스템</div>
+      <div class="submenu-item" onclick="loadAircon('wia')">현대위아</div>
+      <div class="submenu-item" onclick="loadAircon('denso')">덴소</div>
+      <div class="submenu-item" onclick="loadAircon('valeo')">발레오</div>
+      <div class="submenu-item" onclick="loadAircon('mahle')">말레</div>
+    </div>
+    <div class="menu-item" onclick="showSection('patents')"><span><span class="menu-icon">📄</span>최신 특허</span></div>
+    <div class="menu-item" onclick="showSection('compare')"><span><span class="menu-icon">🔍</span>SR 비교분석</span></div>
+    <div class="menu-item" onclick="showSection('meeting')"><span><span class="menu-icon">🎙️</span>회의록</span></div>
+    <div class="menu-item" onclick="showSection('dataviz')"><span><span class="menu-icon">📊</span>데이터 시각화</span></div>
+    <div class="menu-item" onclick="showSection('groupware')"><span><span class="menu-icon">🖥️</span>그룹웨어 서포터</span></div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="menu-item" onclick="showSection('requests')"><span><span class="menu-icon">📋</span>AI팀 요청사항</span></div>
+    {% if role == 'admin' %}
+    <div class="menu-item" onclick="showAdminPanel()" style="color:#f59e0b;"><span><span class="menu-icon">⚙️</span>관리모드</span></div>
+    {% endif %}
+    <div class="sidebar-logout" onclick="location.href='/logout'">⏏ 로그아웃 ({{ username }})</div>
+  </div>
+</nav>
+
+<div id="main">
+  <header id="topbar">
+    <div class="topbar-title" id="topbar-title">홈</div>
+    <div class="topbar-meta">
+      <span id="clock">--:--:--</span>
+      <span>접속자 <span id="visitor-count">-</span>명</span>
+      {% if role == 'admin' %}<span class="topbar-badge">관리자</span>{% endif %}
+      <span style="color:var(--text-secondary);">{{ username }}</span>
+    </div>
+  </header>
+  <div id="content-area">
+
+    <!-- ── 홈 ── -->
+    <div class="section-card active" id="section-home">
+      <div class="section-header"><h2>🏠 홈</h2></div>
+      <div class="home-layout">
+        <div class="card" style="flex:1;min-width:280px;max-width:500px;">
+          <div class="card-title">📢 공지사항</div>
+          <ul class="notice-list" id="notice-list"><li><span class="notice-title" style="color:var(--text-muted)">로딩 중...</span></li></ul>
+        </div>
+        <div class="card" style="flex:2;min-width:300px;">
+          <div class="card-title">📅 웹페이지 대시보드</div>
+          <div id="prod-plan-area">
+            <img src="/static/생산계획표.png" style="max-width:100%; border-radius:8px;"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+            <div style="display:none; color:var(--text-muted); font-size:14px;">이미지가 없습니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 뉴스 ── -->
+    <div class="section-card" id="section-news">
+      <div class="section-header">
+        <h2>📰 뉴스</h2>
+        <span class="badge" id="news-badge">키워드 뉴스</span>
+      </div>
+      <div class="news-toolbar" id="news-toolbar">
+        <div class="news-toolbar-group" id="news-toolbar-keyword">
+          <span class="news-toolbar-label">⚡ 키워드</span>
+          <button class="news-tab" onclick="loadNewsFilter('keyword','공조 시스템')">공조 시스템</button>
+          <button class="news-tab" onclick="loadNewsFilter('keyword','컴프레서')">컴프레서</button>
+          <button class="news-tab" onclick="loadNewsFilter('keyword','냉각수 밸브')">냉각수 밸브</button>
+          <button class="news-tab" onclick="loadNewsFilter('keyword','차량 열관리')">차량 열관리</button>
+          <div style="display:flex;align-items:center;gap:4px;margin-left:8px;border-left:1px solid var(--border);padding-left:8px;">
+            <input id="news-search-input" type="text" placeholder="직접 검색..."
+              style="height:26px;padding:0 8px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:12px;font-family:var(--font);width:110px;outline:none;"
+              onkeydown="if(event.key==='Enter') searchNewsDirect()"
+            />
+            <button class="news-tab" onclick="searchNewsDirect()" style="background:var(--accent);color:#fff;border-color:var(--accent);">🔍</button>
+          </div>
+        </div>
+        <div class="news-toolbar-sep"></div>
+        <div class="news-toolbar-group" id="news-toolbar-front">
+          <span class="news-toolbar-label">📄 신문사</span>
+          <button class="news-tab" onclick="loadNewsFilter('front','매일경제')">매일경제</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','한국경제')">한국경제</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','조선Biz')">조선Biz</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','MBC')">MBC</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','KBS')">KBS</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','YTN')">YTN</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','조선일보')">조선일보</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','중앙일보')">중앙일보</button>
+          <button class="news-tab" onclick="loadNewsFilter('front','자동차')" style="border-left:1px solid var(--border);margin-left:4px;color:#f59e0b;">🚗 자동차</button>
+        </div>
+        <div class="news-toolbar-sep"></div>
+        <div class="news-toolbar-group" id="news-toolbar-car">
+          <span class="news-toolbar-label">🚗 자동차</span>
+          <button class="news-tab" onclick="loadNewsFilter('car','전기차')">전기차</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','하이브리드')">하이브리드</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','수소전기차')">수소전기차</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','자율주행')">자율주행</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','배터리')">배터리</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','현대차')">현대차</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','기아차')">기아차</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','테슬라')">테슬라</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','BYD')">BYD</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','Geely')">Geely</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','샤오미')">샤오미</button>
+          <button class="news-tab" onclick="loadNewsFilter('car','토요타')">토요타</button>
+        </div>
+        <!-- 수집 상태 + admin 수집 버튼 -->
+        <div class="news-status-bar">
+          <span class="news-status-text" id="news-status-text">🔄 수집 정보 확인 중...</span>
+          {% if role == 'admin' %}
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="news-filter-setting-btn" onclick="showFilterSettings()">⚙️ 필터 설정</button>
+            <button class="news-fetch-btn" id="news-fetch-btn" onclick="fetchNews()">▶ 뉴스 수집 시작</button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="news-body" id="news-body">
+        <div class="news-loading"><div class="spinner"></div><span>뉴스 불러오는 중...</span></div>
+      </div>
+    </div>
+
+    <!-- ════ 📖 오토저널 ════ -->
+    <div class="section-card" id="section-autojournal">
+      <div class="section-header" style="flex-shrink:0;">
+        <h2>📖 한국자동차공학회 오토저널</h2>
+        <span class="badge" id="autojournal-badge">호 선택</span>
+        <button onclick="refreshAutojournal()"
+          style="margin-left:12px;padding:4px 12px;border-radius:14px;border:none;background:#22c55e;color:#fff;font-size:12px;cursor:pointer;">🔄 새로고침</button>
+        <a id="autojournal-open-link" href="#" target="_blank"
+          style="display:none;margin-left:8px;padding:4px 12px;border-radius:14px;border:1px solid var(--accent);color:var(--accent);font-size:12px;text-decoration:none;">🔗 새 탭에서 열기</a>
+      </div>
+      <div style="display:flex;gap:0;height:calc(100vh - 160px);">
+        <!-- 왼쪽: 호 목록만 -->
+        <div class="file-panel" style="min-width:220px;max-width:240px;display:flex;flex-direction:column;height:100%;flex-shrink:0;">
+          <div class="file-panel-header">호 목록</div>
+          <div id="autojournal-issues-list" style="overflow-y:auto;flex:1;">
+            <div style="padding:12px;color:var(--text-muted);font-size:12px;">⏳ 로딩 중...</div>
+          </div>
+        </div>
+        <!-- 오른쪽: iframe 뷰어 -->
+        <iframe id="autojournal-iframe"
+          src="about:blank"
+          style="flex:1;width:0;height:100%;border:none;border-radius:0 0 12px 0;background:var(--bg-card2);"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+
+    <!-- ════ 📑 KDI 연구자료 ════ -->
+    <div class="section-card" id="section-research">
+      <div class="section-header">
+        <h2 id="research-title">📑 한국개발연구원 (KDI)</h2>
+        <span class="badge" id="research-badge">자료 선택</span>
+        {% if role == 'admin' %}
+        <button id="research-refresh-btn" onclick="refreshKDI()"
+          style="margin-left:12px;padding:4px 12px;border-radius:14px;border:none;background:#22c55e;color:#fff;font-size:12px;cursor:pointer;">🔄 새로고침</button>
+        {% endif %}
+      </div>
+      <!-- 자료유형 탭 -->
+      <div style="display:flex;gap:6px;padding:8px 20px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:flex-end;">
+        <span style="font-size:12px;color:var(--text-muted);margin-right:4px;padding-bottom:8px;">자료 유형</span>
+        <button class="news-tab active" id="kdi-tab-nara"     onclick="setKDIType('nara')">📰 KDI 발행물</button>
+        <button class="news-tab"        id="kdi-tab-material" onclick="setKDIType('material')">📊 경제정책자료</button>
+        <button class="news-tab"        id="kdi-tab-domestic" onclick="setKDIType('domestic')">🗂️ 국내연구자료</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-muted);padding-bottom:8px;" id="kdi-cache-info"></span>
+      </div>
+      <!-- 키워드 서브탭 -->
+      <div style="display:flex;gap:6px;padding:6px 20px;background:var(--bg-card2);border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;color:var(--text-muted);margin-right:4px;align-self:center;">키워드</span>
+        <button class="news-tab active" id="kdi-kw-car"       onclick="setKDIKeyword('car')">🚗 자동차</button>
+        <button class="news-tab"        id="kdi-kw-mobility"  onclick="setKDIKeyword('mobility')">🛺 모빌리티</button>
+      </div>
+      <!-- 목록 + PDF 뷰어 분할 -->
+      <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
+        <!-- 자료 목록 -->
+        <div id="kdi-body" style="flex:1;overflow-y:auto;padding:16px 20px;min-width:300px;">
+          <div class="placeholder-msg"><span class="big-icon">📑</span><span>위 탭을 선택하면 자료를 불러옵니다.</span></div>
+        </div>
+        <!-- PDF 뷰어 (클릭 시 표시) -->
+        <div id="kdi-pdf-panel" style="display:none;flex-direction:column;width:60%;border-left:1px solid var(--border);">
+          <div style="display:flex;align-items:center;padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;">
+            <span id="kdi-pdf-title" style="font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            <a id="kdi-pdf-newlink" href="#" target="_blank"
+              style="padding:3px 10px;border-radius:12px;border:1px solid var(--accent);color:var(--accent);font-size:11px;text-decoration:none;flex-shrink:0;">🔗 새 탭</a>
+            <button onclick="closeKDIPdf()"
+              style="padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;flex-shrink:0;">✕ 닫기</button>
+          </div>
+          <iframe id="kdi-pdf-iframe" src="about:blank"
+            style="flex:1;width:100%;border:none;background:#fff;">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ 🚗 자동차 트렌드 ════ -->
+    <div class="section-card" id="section-trend">
+      <div class="section-header"><h2>🚗 자동차 트렌드</h2><span class="badge" id="trend-company-badge">업체 선택</span></div>
+      <div class="feature-layout">
+        <div class="file-panel">
+          <div class="file-panel-header" id="trend-panel-header">파일 목록</div>
+          <div id="trend-file-list"><div class="placeholder-msg" style="height:180px;"><span>← 왼쪽 메뉴에서 업체를 선택하세요</span></div></div>
+        </div>
+        <div class="content-panel">
+          <div class="content-panel-header" id="trend-content-header">파일을 선택하면 내용이 표시됩니다.</div>
+          <div class="content-panel-body" id="trend-content-body"><div class="placeholder-msg"><span class="big-icon">🚗</span><span>왼쪽에서 업체 → 파일을 선택하세요.</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ ❄️ 차량 공조업체 뉴스 ════ -->
+    <div class="section-card" id="section-aircon">
+      <div class="section-header"><h2>❄️ 차량 공조업체 뉴스</h2><span class="badge" id="aircon-company-badge">업체 선택</span></div>
+      
+        <div class="feature-layout">
+          <div class="file-panel">
+            <div class="file-panel-header" id="aircon-panel-header">파일 목록</div>
+            <div id="aircon-file-list"><div class="placeholder-msg" style="height:180px;"><span>← 왼쪽 메뉴에서 업체를 선택하세요</span></div></div>
+          </div>
+          <div class="content-panel">
+            <div class="content-panel-header" id="aircon-content-header">파일을 선택하면 내용이 표시됩니다.</div>
+            <div class="content-panel-body" id="aircon-content-body"><div class="placeholder-msg"><span class="big-icon">❄️</span><span>왼쪽에서 업체 → 파일을 선택하세요.</span></div></div>
+          </div>
+        </div>
+    </div>
+
+    <!-- ════ 📄 최신 특허 ════ -->
+    <div class="section-card" id="section-patents">
+      <div class="section-header"><h2>📄 최신 특허</h2></div>
+      
+        <div id="patents-filter-bar" class="filter-bar">
+          <div class="filter-group"><span class="filter-label">회사</span><div id="patents-company-filters" class="filter-pills"></div></div>
+          <div class="filter-group" style="margin-top:10px;"><span class="filter-label">제품</span><div id="patents-product-filters" class="filter-pills"></div></div>
+        </div>
+        <div id="patents-list" class="patents-grid"><div class="loading-msg">데이터를 불러오는 중...</div></div>
+        <div id="pdf-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);align-items:center;justify-content:center;z-index:1000;" onclick="closePdfModal(event)">
+          <div class="pdf-modal-container">
+            <div class="pdf-modal-header"><span id="pdf-modal-title" class="pdf-modal-title"></span><button class="modal-close-btn" onclick="closePdfModal()">✕</button></div>
+            <div style="flex:1;overflow:hidden;display:flex;">
+              <iframe id="pdf-modal-iframe" src="" style="width:100%;height:100%;border:none;"></iframe>
+              <div id="pdf-modal-divider" style="width:6px;background:#2e3a6e;flex-shrink:0;display:none;"></div>
+              <iframe id="pdf-modal-html-iframe" src="" style="width:0;height:100%;border:none;display:none;"></iframe>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- ════ 🔍 SR 비교분석 ════ -->
+    <div class="section-card" id="section-compare">
+      <div class="section-header"><h2>🔍 SR 비교분석</h2></div>
+      
+        <div class="compare-body">
+          <div class="compare-upload-row">
+            <div class="upload-panel" id="panel1" ondragover="cmpDragOver(event,'panel1')" ondragleave="cmpDragLeave('panel1')" ondrop="cmpDrop(event,1)">
+              <div class="upload-label">📄 문서 1 (기준)</div>
+              <div class="drop-zone"><input type="file" id="file1" accept=".txt,.docx,.pdf" onchange="cmpFileSelect(1)"><div class="drop-zone-icon">⬆</div><div class="drop-zone-text">파일을 드래그하거나 <span>클릭하여 업로드</span></div><div class="drop-zone-text" style="margin-top:4px">(.txt / .docx / .pdf)</div></div>
+              <div class="drop-zone-filename" id="fname1"></div>
+              <div class="panel-or">또는 직접 입력</div>
+              <textarea class="panel-textarea" id="text1" placeholder="텍스트를 직접 붙여넣기하세요..." oninput="cmpTextInput(1)"></textarea>
+            </div>
+            <div class="upload-panel" id="panel2" ondragover="cmpDragOver(event,'panel2')" ondragleave="cmpDragLeave('panel2')" ondrop="cmpDrop(event,2)">
+              <div class="upload-label">📄 문서 2 (비교)</div>
+              <div class="drop-zone"><input type="file" id="file2" accept=".txt,.docx,.pdf" onchange="cmpFileSelect(2)"><div class="drop-zone-icon">⬆</div><div class="drop-zone-text">파일을 드래그하거나 <span>클릭하여 업로드</span></div><div class="drop-zone-text" style="margin-top:4px">(.txt / .docx / .pdf)</div></div>
+              <div class="drop-zone-filename" id="fname2"></div>
+              <div class="panel-or">또는 직접 입력</div>
+              <textarea class="panel-textarea" id="text2" placeholder="텍스트를 직접 붙여넣기하세요..." oninput="cmpTextInput(2)"></textarea>
+            </div>
+          </div>
+          <div class="compare-action-row">
+            <button class="btn-compare" id="btnCompare" onclick="cmpStart()">⚡ 비교 시작</button>
+            <button class="btn-reset" onclick="cmpReset()">↺ 초기화</button>
+            <div class="compare-loading" id="cmpLoading"><div class="spinner"></div> 분석 중...</div>
+            <div class="similarity-badge" id="simBadge"><span class="sim-label">유사도</span><span class="sim-value" id="simValue">—</span></div>
+            <div class="compare-status" id="cmpStatus">파일을 업로드하거나 텍스트를 입력하세요.</div>
+          </div>
+          <div class="compare-result" id="compareResult">
+            <div class="result-header"><span>비교 결과</span><div class="legend"><div class="legend-item"><span class="legend-dot legend-add"></span>추가</div><div class="legend-item"><span class="legend-dot legend-del"></span>삭제</div></div></div>
+            <div class="diff-columns">
+              <div><div class="diff-col-title">문서 1 (기준)</div><div class="diff-box" id="diffBox1"></div></div>
+              <div><div class="diff-col-title">문서 2 (비교)</div><div class="diff-box" id="diffBox2"></div></div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- ── 회의록 ── -->
+    <div class="section-card" id="section-meeting">
+      <div class="section-header"><h2>🎙️ 회의록</h2></div>
+      <iframe id="meeting-frame" src="/meeting"
+        style="flex:1;border:none;width:100%;min-height:0;"
+        allowfullscreen></iframe>
+    </div>
+
+    <!-- ════ 📊 데이터 시각화 ════ -->
+    <div class="section-card" id="section-dataviz">
+      <div class="section-header"><h2>📊 데이터 시각화</h2></div>
+      
+        <div class="dataviz-layout">
+          <div class="dataviz-sidebar">
+            <div class="dv-panel-title">파일 목록</div>
+            <div id="dv-file-list" class="dv-file-list"><div class="loading-msg">불러오는 중...</div></div>
+          </div>
+          <div class="dataviz-main">
+            <div id="dv-preview-panel" class="dv-panel" style="display:none;"><div class="dv-panel-header"><span id="dv-preview-filename" class="dv-panel-title"></span><span id="dv-shape-info" class="dv-shape-info"></span></div><div class="dv-table-wrap"><table class="dv-table"><thead id="dv-table-head"></thead><tbody id="dv-table-body"></tbody></table></div></div>
+            <div id="dv-recommend-panel" class="dv-panel" style="display:none;"><div class="dv-panel-title">📊 AI 자동 추천 차트</div><div id="dv-recommend-list" class="dv-recommend-list"></div></div>
+            <div id="dv-manual-panel" class="dv-panel" style="display:none;">
+              <div class="dv-panel-title">🛠 수동 차트 설정</div>
+              <div class="dv-manual-form">
+                <div class="dv-form-row"><label>그래프 타입</label><select id="dv-chart-type"><option value="bar">막대 차트</option><option value="line">라인 차트</option><option value="scatter">산점도</option><option value="pie">파이 차트</option></select></div>
+                <div class="dv-form-row"><label>X축</label><select id="dv-x-col"></select></div>
+                <div class="dv-form-row"><label>Y축</label><select id="dv-y-col"></select></div>
+                <button class="btn-accent" onclick="renderManualChart()">차트 생성</button>
+              </div>
+            </div>
+            <div id="dv-chart-panel" class="dv-panel" style="display:none;"><div class="dv-panel-header"><span id="dv-chart-title" class="dv-panel-title"></span><button class="btn-sm" onclick="clearChart()">닫기</button></div><div style="position:relative;height:400px;"><canvas id="dv-chart-canvas"></canvas></div></div>
+          </div>
+        </div>
+    </div>
+
+    <!-- ── 그룹웨어 서포터 ── -->
+    <div class="section-card" id="section-groupware">
+      <div class="section-header"><h2>🖥️ 그룹웨어 서포터</h2></div>
+      <div class="wip-section"><div class="wip-icon">🖥️</div><div class="wip-title">그룹웨어 서포터</div><div class="wip-desc">현재 개발 중인 기능입니다.</div></div>
+    </div>
+
+    <!-- ── AI팀 요청사항 ── -->
+    <div class="section-card" id="section-requests">
+      <div class="section-header"><h2>📋 AI팀 요청사항</h2></div>
+      <div class="wip-section"><div class="wip-icon">📋</div><div class="wip-title">AI팀 요청사항</div><div class="wip-desc">현재 개발 중인 기능입니다.</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 공지사항 모달 -->
+<div class="modal-overlay" id="notice-modal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title" id="modal-notice-title">공지사항</div><button class="modal-close" onclick="closeNoticeModal()">✕</button></div>
+    <div class="modal-body" id="modal-notice-body"></div>
+  </div>
+</div>
+
+<script>
+  const ROLE = '{{ role }}';
+
+  function showSection(name) {
+    document.querySelectorAll('.section-card').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById('section-' + name);
+    if (el) el.classList.add('active');
+    const h2 = el ? el.querySelector('.section-header h2') : null;
+    document.getElementById('topbar-title').textContent = h2 ? h2.textContent : '홈';
+    if (name === 'patents') initPatents();
+    if (name === 'dataviz') initDataViz();
+  }
+
+  // submenu-research 내 active 처리
+
+  // ── 관리모드: 기능 표시 설정 ──
+  const ADMIN_FEATURES = [
+    { id: 'news',      icon: '📰', label: '뉴스' },
+    { id: 'research',  icon: '🔬', label: '자동차 연구자료 (KDI·오토저널)' },
+    { id: 'aircon',    icon: '❄️', label: '차량 공조업체 뉴스' },
+    { id: 'patents',   icon: '📄', label: '최신 특허' },
+    { id: 'compare',   icon: '🔍', label: 'SR 비교분석' },
+    { id: 'meeting',   icon: '🎙️', label: '회의록' },
+    { id: 'dataviz',   icon: '📊', label: '데이터 시각화' },
+    { id: 'groupware', icon: '🖥️', label: '그룹웨어 서포터' },
+    { id: 'requests',  icon: '📋', label: 'AI팀 요청사항' },
+  ];
+
+  // localStorage에서 설정 로드 (없으면 전부 켜짐)
+  function loadFeatureSettings() {
+    try {
+      const saved = localStorage.getItem('admin_features');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  }
+
+  function saveFeatureSettings(settings) {
+    localStorage.setItem('admin_features', JSON.stringify(settings));
+  }
+
+  function applyFeatureVisibility() {
+    const settings = loadFeatureSettings();
+    ADMIN_FEATURES.forEach(f => {
+      // 사이드바 메뉴 아이템 숨김/표시
+      // 메뉴에서 해당 섹션을 여는 버튼을 찾아서 처리
+      const enabled = settings[f.id] !== false; // 기본값 true
+      // section-card 숨김
+      const section = document.getElementById('section-' + f.id);
+      if (section) section.style.display = enabled ? '' : 'none';
+      // 사이드바 메뉴 아이템 숨김 (onclick에 섹션 id 포함된 것)
+      document.querySelectorAll('.menu-item, .submenu-item').forEach(el => {
+        const oc = el.getAttribute('onclick') || '';
+        if (oc.includes("'" + f.id + "'") || oc.includes('"' + f.id + '"')) {
+          el.style.display = enabled ? '' : 'none';
+        }
+      });
+      // toggleMenu로 열리는 메뉴 그룹
+      const menuEl = document.getElementById('menu-' + f.id);
+      if (menuEl) menuEl.style.display = enabled ? '' : 'none';
+    });
+  }
+
+  function showAdminPanel() {
+    const settings = loadFeatureSettings();
+    const list = document.getElementById('admin-feature-list');
+    list.innerHTML = '';
+    ADMIN_FEATURES.forEach(f => {
+      const enabled = settings[f.id] !== false;
+      list.innerHTML += `
+        <label style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;cursor:pointer;">
+          <span style="font-size:13px;color:var(--text-primary);">${f.icon} ${f.label}</span>
+          <input type="checkbox" id="admin-toggle-${f.id}" ${enabled ? 'checked' : ''}
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);">
+        </label>`;
+    });
+    document.getElementById('admin-panel-overlay').style.display = 'flex';
+  }
+
+  function closeAdminPanel(e) {
+    if (e && e.target !== document.getElementById('admin-panel-overlay')) return;
+    document.getElementById('admin-panel-overlay').style.display = 'none';
+  }
+
+  function applyAdminFeatures() {
+    const settings = {};
+    ADMIN_FEATURES.forEach(f => {
+      const cb = document.getElementById('admin-toggle-' + f.id);
+      if (cb) settings[f.id] = cb.checked;
+    });
+    saveFeatureSettings(settings);
+    applyFeatureVisibility();
+    document.getElementById('admin-panel-overlay').style.display = 'none';
+  }
+
+  // 페이지 로드 시 적용
+  document.addEventListener('DOMContentLoaded', applyFeatureVisibility);
+
+  function setResearchActive(el) {
+    document.querySelectorAll('#submenu-research .submenu-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function toggleMenu(name) {
+    const menuEl = document.getElementById('menu-' + name);
+    const subEl  = document.getElementById('submenu-' + name);
+    const isOpen = subEl.classList.contains('open');
+    document.querySelectorAll('.submenu').forEach(s => s.classList.remove('open'));
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('open'));
+    if (!isOpen) {
+      subEl.classList.add('open');
+      menuEl.classList.add('open');
+      // 오토저널 메뉴 열 때 호 목록 자동 로드
+      if (name === 'autojournal' || name === 'research') loadAJIssues();
+    }
+  }
+
+  function updateClock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('ko-KR'); }
+  setInterval(updateClock, 1000); updateClock();
+
+  function updateSidebarDate() {
+    const now = new Date(), days = ['일','월','화','수','목','금','토'];
+    const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
+    const h=String(now.getHours()).padStart(2,'0'), min=String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('sidebar-date').textContent = `${y}.${m}.${d} (${days[now.getDay()]}) ${h}:${min}`;
+  }
+  setInterval(updateSidebarDate, 60000); updateSidebarDate();
+
+  async function updateVisitors() {
+    try {
+      const r = await fetch('/api/visitors');
+      if (r.ok) {
+        const d = await r.json();
+        document.getElementById('visitor-count').textContent = d.active ?? '-';
+        document.getElementById('sidebar-visitors').textContent = `현재: ${d.active}명 / 오늘: ${d.daily}명`;
+      }
+    } catch(e) {}
+  }
+  setInterval(updateVisitors, 30000); updateVisitors();
+
+  function escapeHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+  function setLoading(id) { document.getElementById(id).innerHTML='<div class="loading-spinner"><div class="spinner"></div><span>불러오는 중...</span></div>'; }
+  function renderHtmlInPanel(bodyId, headerId, filename, htmlContent, fileType) {
+    document.getElementById(headerId).textContent = filename;
+    const body = document.getElementById(bodyId); body.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.className = 'html-frame';
+    if (fileType === 'pdf') { iframe.src = '/api/trend/raw/' + window._trendCompany + '/' + encodeURIComponent(window._trendFilename); iframe.style.cssText='width:100%;height:100%;border:none;'; }
+    else { iframe.srcdoc = htmlContent; iframe.sandbox = 'allow-scripts'; }
+    body.appendChild(iframe);
+  }
+  function showFileError(id, msg) { document.getElementById(id).innerHTML=`<div class="placeholder-msg"><span class="big-icon">⚠️</span><span>${msg}</span></div>`; }
+
+  function loadNotices() {
+    fetch('/api/notices').then(r=>r.json()).then(notices => {
+      const ul = document.getElementById('notice-list');
+      if (!notices.length) { ul.innerHTML='<li><span class="notice-title" style="color:var(--text-muted)">공지사항이 없습니다.</span></li>'; return; }
+      ul.innerHTML = notices.map(n=>`<li onclick="openNotice('${n.filename}','${escapeHtml(n.title)}')"><span class="notice-title">${escapeHtml(n.title)}</span><span class="notice-sep">---</span><span class="notice-date">${n.date}</span></li>`).join('');
+    }).catch(()=>{});
+  }
+  function openNotice(filename, title) {
+    fetch('/api/notices/'+encodeURIComponent(filename)).then(r=>r.json()).then(d=>{
+      document.getElementById('modal-notice-title').textContent=title;
+      document.getElementById('modal-notice-body').textContent=d.content;
+      document.getElementById('notice-modal').classList.add('open');
+    });
+  }
+  function closeNoticeModal() { document.getElementById('notice-modal').classList.remove('open'); }
+  document.getElementById('notice-modal').addEventListener('click',function(e){if(e.target===this)closeNoticeModal();});
+
+  // ── 오토저널 ──────────────────────────────────────────
+  // 사이드바 '오토저널' 클릭 → 섹션 이동 + 호 목록 로드
+  function loadAJMenu() {
+    showSection('autojournal');
+    loadAJIssues();
+  }
+
+  // 새로고침 - 서버 캐시 초기화 후 36개 재로드
+  async function refreshAutojournal() {
+    const listEl = document.getElementById('autojournal-issues-list');
+    if (listEl) {
+      delete listEl.dataset.loaded;
+      listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted);font-size:12px;">⏳ 다시 불러오는 중...</div>';
+    }
+    try {
+      const r = await fetch('/api/autojournal/refresh', { method: 'POST' });
+      const data = await r.json();
+      if (data.issues && listEl) {
+        listEl.innerHTML = '';
+        data.issues.forEach(issue => {
+          const div = document.createElement('div');
+          div.className = 'submenu-item';
+          div.textContent = issue.label;
+          div.dataset.issueId = issue.id;
+          div.onclick = () => {
+            document.querySelectorAll('#autojournal-issues-list .submenu-item').forEach(el => el.classList.remove('active'));
+            div.classList.add('active');
+            loadAJIssue(issue.id, issue.label, issue.url);
+          };
+          listEl.appendChild(div);
+        });
+        listEl.dataset.loaded = '1';
+      }
+    } catch(e) {
+      loadAJIssues();
+    }
+  }
+
+  // ── KDI 연구자료 ──────────────────────────────────────
+  let _kdiCurrentSource  = 'nara';
+  let _kdiCurrentKeyword = 'car';  // 'car' | 'mobility'
+
+  const KDI_KEYWORDS = { car: '자동차', mobility: '모빌리티' };
+  const KDI_LABELS   = { nara: 'KDI 발행물', material: '경제정책자료', domestic: '국내연구자료' };
+
+  function loadKDIMenu() {
+    showSection('research');
+    setKDIType(_kdiCurrentSource);
+  }
+
+  function setKDIType(source) {
+    _kdiCurrentSource = source;
+    showSection('research');
+    ['nara','material','domestic'].forEach(s => {
+      const btn = document.getElementById('kdi-tab-' + s);
+      if (btn) btn.classList.toggle('active', s === source);
+    });
+    _loadKDIData();
+  }
+
+  function setKDIKeyword(kw) {
+    _kdiCurrentKeyword = kw;
+    ['car','mobility'].forEach(k => {
+      const btn = document.getElementById('kdi-kw-' + k);
+      if (btn) btn.classList.toggle('active', k === kw);
+    });
+    _loadKDIData();
+  }
+
+  async function _loadKDIData() {
+    const source  = _kdiCurrentSource;
+    const keyword = _kdiCurrentKeyword;
+    const kwLabel = KDI_KEYWORDS[keyword] || keyword;
+    const srcLabel = KDI_LABELS[source] || source;
+
+    document.getElementById('research-badge').textContent = `${srcLabel} · ${kwLabel}`;
+
+    const body = document.getElementById('kdi-body');
+    body.innerHTML = '<div class="news-loading"><div class="spinner"></div><span>자료 불러오는 중...</span></div>';
+
+    try {
+      const r = await fetch(`/api/kdi/${source}?keyword=${encodeURIComponent(kwLabel)}`);
+      const data = await r.json();
+      if (data.status !== 'success') throw new Error(data.message || '로드 실패');
+      const items = data.items || [];
+      const cacheInfo = document.getElementById('kdi-cache-info');
+      if (cacheInfo) cacheInfo.textContent = `총 ${items.length}건 · ${data._cached_at || ''}`;
+      if (!items.length) {
+        body.innerHTML = '<div class="news-empty"><div class="big-icon">📭</div><div>검색 결과가 없습니다.</div></div>';
+        return;
+      }
+      body.innerHTML = source === 'nara' ? _renderNara(items) : _renderKDIList(items);
+    } catch(e) {
+      body.innerHTML = `<div class="news-empty"><div class="big-icon">⚠️</div><div>불러오기 실패: ${escapeHtml(e.message)}</div></div>`;
+    }
+  }
+
+  // 하위 호환용 (다른 곳에서 loadKDI 호출 시)
+  function loadKDI(source) { setKDIType(source); }
+
+  function _renderNara(items) {
+    const groups = {};
+    items.forEach(it => {
+      const cat = it.category || '기타';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(it);
+    });
+    let html = '';
+    for (const [cat, list] of Object.entries(groups)) {
+      html += `<div style="margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:600;color:var(--accent-light);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px;">📌 ${escapeHtml(cat)}</div>`;
+      list.forEach(it => {
+        html += `<div class="news-card" onclick="openKDIPdf('${escapeHtml(it.url)}','${escapeHtml(it.title)}')" style="cursor:pointer;margin-bottom:8px;">
+          <div class="news-card-header">
+            <div class="news-meta">
+              <span class="news-source">${escapeHtml(it.date)}</span>
+              ${it.author ? `<span class="news-keyword">${escapeHtml(it.author)}</span>` : ''}
+            </div>
+            <div class="news-title">${escapeHtml(it.title)}</div>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    return html;
+  }
+
+  function _renderKDIList(items) {
+    return items.map(it => `
+      <div class="news-card" onclick="openKDIPdf('${escapeHtml(it.url)}','${escapeHtml(it.title)}')" style="cursor:pointer;margin-bottom:8px;">
+        <div class="news-card-header">
+          <div class="news-meta">
+            <span class="news-source">${escapeHtml(it.date || '')}</span>
+            ${it.org ? `<span class="news-keyword">${escapeHtml(it.org)}</span>` : ''}
+            ${it.keyword ? `<span class="news-keyword" style="background:var(--bg-card2);">${escapeHtml(it.keyword)}</span>` : ''}
+          </div>
+          <div class="news-title">${escapeHtml(it.title)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // KDI PDF 뷰어 열기
+  async function openKDIPdf(pageUrl, title) {
+    const panel = document.getElementById('kdi-pdf-panel');
+    const iframe = document.getElementById('kdi-pdf-iframe');
+    const titleEl = document.getElementById('kdi-pdf-title');
+    const newlink = document.getElementById('kdi-pdf-newlink');
+
+    panel.style.display = 'flex';
+    titleEl.textContent = title;
+    newlink.href = pageUrl;
+    iframe.src = 'about:blank';
+    iframe.style.background = 'var(--bg-card2)';
+    titleEl.textContent = '⏳ PDF 불러오는 중...';
+
+    try {
+      const r = await fetch('/api/kdi/pdf-url?page=' + encodeURIComponent(pageUrl));
+      const data = await r.json();
+      if (data.pdf_url) {
+        iframe.src = data.pdf_url;
+        titleEl.textContent = title;
+        newlink.href = data.pdf_url;
+      } else {
+        // PDF URL 못 찾으면 페이지 자체를 iframe에 표시
+        iframe.src = '/api/kdi/proxy?url=' + encodeURIComponent(pageUrl);
+        titleEl.textContent = title;
+      }
+    } catch(e) {
+      iframe.src = pageUrl;
+      titleEl.textContent = title;
+    }
+  }
+
+  function closeKDIPdf() {
+    const panel = document.getElementById('kdi-pdf-panel');
+    panel.style.display = 'none';
+    document.getElementById('kdi-pdf-iframe').src = 'about:blank';
+  }
+
+
+  async function refreshKDI() {
+    if (!_kdiCurrentSource) return;
+    const btn = document.getElementById('research-refresh-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ 갱신 중...'; }
+    try {
+      await fetch('/api/kdi/refresh/' + _kdiCurrentSource, { method: 'POST' });
+      await _loadKDIData();
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '🔄 새로고침'; }
+    }
+  }
+
+  // ── 오토저널: iframe 프록시 방식 ─────────────────────────
+  let _ajCurrentIssue = null;
+
+  async function loadAJIssues() {
+    const listEl = document.getElementById('autojournal-issues-list');
+    if (!listEl || listEl.dataset.loaded) return;
+    try {
+      const r = await fetch('/api/autojournal/issues');
+      const data = await r.json();
+      if (!data.issues || !data.issues.length) {
+        listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted);font-size:12px;">호 목록 없음</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      listEl.dataset.loaded = '1';
+      data.issues.forEach(issue => {
+        const div = document.createElement('div');
+        div.className = 'submenu-item';
+        div.textContent = issue.label;
+        div.dataset.issueId = issue.id;
+        div.onclick = () => {
+          // 클릭 활성화 표시
+          document.querySelectorAll('#autojournal-issues-list .submenu-item').forEach(el => el.classList.remove('active'));
+          div.classList.add('active');
+          loadAJIssue(issue.id, issue.label, issue.url);
+        };
+        listEl.appendChild(div);
+      });
+    } catch(e) {
+      listEl.innerHTML = '<div style="padding:12px;color:#f87171;font-size:12px;">로드 실패: ' + e.message + '</div>';
+    }
+  }
+
+  async function loadAJIssue(issueId, label, originalUrl) {
+    showSection('autojournal');
+    _ajCurrentIssue = issueId;
+    document.getElementById('autojournal-badge').textContent = label || issueId;
+
+    // "새 탭에서 열기" 링크 활성화
+    const openLink = document.getElementById('autojournal-open-link');
+    if (openLink) {
+      openLink.href = originalUrl || `https://online.webbook.kr/books/${issueId}/`;
+      openLink.style.display = 'inline-block';
+    }
+
+    // iframe에 프록시 URL 로드
+    const iframe = document.getElementById('autojournal-iframe');
+    iframe.src = `/api/autojournal/proxy/${issueId}`;
+  }
+
+  async function loadTrend(company) {
+    showSection('trend');
+    document.querySelectorAll('#submenu-trend .submenu-item').forEach(el=>el.classList.remove('active'));
+    if(event.currentTarget) event.currentTarget.classList.add('active');
+    document.getElementById('trend-panel-header').textContent='파일 불러오는 중...';
+    document.getElementById('trend-file-list').innerHTML='<div class="loading-spinner" style="height:100px;"><div class="spinner"></div></div>';
+    document.getElementById('trend-content-header').textContent='파일을 선택하면 내용이 표시됩니다.';
+    document.getElementById('trend-content-body').innerHTML='<div class="placeholder-msg"><span class="big-icon">🚗</span><span>파일을 선택하세요.</span></div>';
+    try {
+      const r=await fetch(`/api/trend/${company}`); if(!r.ok) throw new Error();
+      const data=await r.json();
+      document.getElementById('trend-company-badge').textContent=data.company_kr;
+      document.getElementById('trend-panel-header').textContent=data.company_kr+' — 파일 목록';
+      const listEl=document.getElementById('trend-file-list');
+      if(!data.files||!data.files.length){listEl.innerHTML='<div class="file-list-empty">파일이 없습니다.</div>';return;}
+      listEl.innerHTML='';
+      data.files.forEach(filename=>{
+        const item=document.createElement('div'); item.className='file-item'; item.textContent=filename;
+        item.onclick=()=>{window._trendCompany=company;window._trendFilename=filename;openTrendFile(company,filename,item);};
+        listEl.appendChild(item);
+      });
+    } catch(e){document.getElementById('trend-panel-header').textContent='오류 발생';document.getElementById('trend-file-list').innerHTML='<div class="file-list-empty">파일 목록을 불러오지 못했습니다.</div>';}
+  }
+
+  async function openTrendFile(company,filename,itemEl){
+    document.querySelectorAll('#trend-file-list .file-item').forEach(el=>el.classList.remove('active'));
+    if(itemEl)itemEl.classList.add('active');
+    setLoading('trend-content-body');
+    document.getElementById('trend-content-header').textContent=filename+' — 불러오는 중...';
+    try{const r=await fetch(`/api/trend/${company}/${encodeURIComponent(filename)}`);if(!r.ok)throw new Error();const data=await r.json();renderHtmlInPanel('trend-content-body','trend-content-header',data.filename,data.content,data.type);}
+    catch(e){showFileError('trend-content-body','파일을 불러오지 못했습니다.');document.getElementById('trend-content-header').textContent='오류';}
+  }
+
+  async function loadAircon(company){
+    showSection('aircon');
+    document.querySelectorAll('#submenu-aircon .submenu-item').forEach(el=>el.classList.remove('active'));
+    if(event.currentTarget)event.currentTarget.classList.add('active');
+    document.getElementById('aircon-panel-header').textContent='파일 불러오는 중...';
+    document.getElementById('aircon-file-list').innerHTML='<div class="loading-spinner" style="height:100px;"><div class="spinner"></div></div>';
+    document.getElementById('aircon-content-header').textContent='파일을 선택하면 내용이 표시됩니다.';
+    document.getElementById('aircon-content-body').innerHTML='<div class="placeholder-msg"><span class="big-icon">❄️</span><span>파일을 선택하세요.</span></div>';
+    try{
+      const r=await fetch(`/api/aircon/${company}`);if(!r.ok)throw new Error();const data=await r.json();
+      document.getElementById('aircon-company-badge').textContent=data.company_kr;
+      document.getElementById('aircon-panel-header').textContent=data.company_kr+' — 파일 목록';
+      const listEl=document.getElementById('aircon-file-list');
+      if(!data.files||!data.files.length){listEl.innerHTML='<div class="file-list-empty">파일이 없습니다.</div>';return;}
+      listEl.innerHTML='';
+      data.files.forEach(filename=>{const item=document.createElement('div');item.className='file-item';item.textContent=filename;item.onclick=()=>openAirconFile(company,filename,item);listEl.appendChild(item);});
+    }catch(e){document.getElementById('aircon-panel-header').textContent='오류 발생';document.getElementById('aircon-file-list').innerHTML='<div class="file-list-empty">파일 목록을 불러오지 못했습니다.</div>';}
+  }
+
+  async function openAirconFile(company,filename,itemEl){
+    document.querySelectorAll('#aircon-file-list .file-item').forEach(el=>el.classList.remove('active'));
+    if(itemEl)itemEl.classList.add('active');
+    setLoading('aircon-content-body');
+    document.getElementById('aircon-content-header').textContent=filename+' — 불러오는 중...';
+    try{const r=await fetch(`/api/aircon/${company}/${encodeURIComponent(filename)}`);if(!r.ok)throw new Error();const data=await r.json();renderHtmlInPanel('aircon-content-body','aircon-content-header',data.filename,data.content,data.type);}
+    catch(e){showFileError('aircon-content-body','파일을 불러오지 못했습니다.');document.getElementById('aircon-content-header').textContent='오류';}
+  }
+
+  let patentsData=[],patentsCompanyFilter='all',patentsProductFilter='all',patentsInited=false;
+  async function initPatents(){if(patentsInited)return;patentsInited=true;const meta=await fetch('/api/patents/meta').then(r=>r.json()).catch(()=>({companies:[],products:[]}));renderFilterPills('patents-company-filters',meta.companies,'company');renderFilterPills('patents-product-filters',meta.products,'product');loadPatents();}
+  function renderFilterPills(containerId,items,filterType){const container=document.getElementById(containerId);container.innerHTML='';items.forEach(item=>{const pill=document.createElement('button');pill.className='filter-pill'+(item.key==='all'?' active':'');pill.textContent=item.label;pill.dataset.key=item.key;pill.addEventListener('click',()=>{container.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));pill.classList.add('active');if(filterType==='company')patentsCompanyFilter=item.key;else patentsProductFilter=item.key;loadPatents();});container.appendChild(pill);});}
+  async function loadPatents(){const listEl=document.getElementById('patents-list');listEl.innerHTML='<div class="loading-msg">불러오는 중...</div>';const data=await fetch(`/api/patents?company=${patentsCompanyFilter}&product=${patentsProductFilter}`).then(r=>r.json()).catch(()=>[]);patentsData=data;renderPatentCards(data);}
+  function renderPatentCards(data){const listEl=document.getElementById('patents-list');listEl.innerHTML='';if(!data.length){listEl.innerHTML='<div class="no-results">해당하는 특허가 없습니다.</div>';return;}data.forEach(patent=>{const card=document.createElement('div');card.className='patent-card';card.innerHTML=`<div class="patent-card-icon">📄</div><div class="patent-card-title">${patent.title}</div><div class="patent-badges"><span class="badge badge-company">${patent.company_kr}</span><span class="badge ${patent.product==='etc'?'badge-etc':'badge-product'}">${patent.product_kr}</span>${patent.year!=='-'?`<span class="badge badge-etc">${patent.year}년</span>`:''}</div>`;card.addEventListener('click',()=>openPdfModal(patent));listEl.appendChild(card);});}
+  function openPdfModal(patent){document.getElementById('pdf-modal-title').textContent=patent.title;const pf=document.getElementById('pdf-modal-iframe'),hf=document.getElementById('pdf-modal-html-iframe'),dv=document.getElementById('pdf-modal-divider');pf.src=patent.pdf_url+'#toolbar=1&navpanes=0';if(patent.has_html){hf.src=patent.html_url;hf.style.display='block';hf.style.width='50%';pf.style.width='50%';dv.style.display='none';}else{hf.style.display='none';hf.src='';dv.style.display='none';pf.style.width='100%';}document.getElementById('pdf-modal').style.display='flex';}
+  function closePdfModal(event){if(event&&event.target!==document.getElementById('pdf-modal'))return;document.getElementById('pdf-modal').style.display='none';document.getElementById('pdf-modal-iframe').src='';}
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeNoticeModal();closeNewsModal();document.getElementById('pdf-modal').style.display='none';document.getElementById('pdf-modal-iframe').src='';}});
+
+  (function(){
+    const cmpState={text1:'',text2:'',file1:null,file2:null};
+    window.cmpDragOver=(e,id)=>{e.preventDefault();document.getElementById(id).classList.add('dragover');};
+    window.cmpDragLeave=(id)=>document.getElementById(id).classList.remove('dragover');
+    window.cmpDrop=(e,idx)=>{e.preventDefault();document.getElementById('panel'+idx).classList.remove('dragover');const f=e.dataTransfer.files[0];if(f)cmpHandleFile(idx,f);};
+    window.cmpFileSelect=(idx)=>{const inp=document.getElementById('file'+idx);if(inp.files[0])cmpHandleFile(idx,inp.files[0]);};
+    function cmpHandleFile(idx,file){const ext=file.name.slice(file.name.lastIndexOf('.')).toLowerCase();if(!['.txt','.docx','.pdf'].includes(ext)){cmpSetStatus('⚠ 지원 형식: .txt / .docx / .pdf');return;}const fnEl=document.getElementById('fname'+idx);fnEl.textContent='📎 '+file.name;fnEl.style.display='block';if(ext==='.txt'){const reader=new FileReader();reader.onload=e=>{cmpState['text'+idx]=e.target.result;document.getElementById('text'+idx).value=e.target.result;cmpSetStatus('');};reader.readAsText(file,'utf-8');}else{cmpState['file'+idx]=file;cmpSetStatus('📂 '+file.name+' 등록됨');}}
+    window.cmpTextInput=(idx)=>{cmpState['text'+idx]=document.getElementById('text'+idx).value;};
+    window.cmpStart=async()=>{let t1=cmpState.text1||document.getElementById('text1').value,t2=cmpState.text2||document.getElementById('text2').value;if(cmpState.file1||cmpState.file2){cmpShowLoading(true);try{const fd=new FormData();if(cmpState.file1)fd.append('file1',cmpState.file1);else fd.append('text1',t1);if(cmpState.file2)fd.append('file2',cmpState.file2);else fd.append('text2',t2);const res=await fetch('/api/compare',{method:'POST',body:fd});const data=await res.json();if(data.error){cmpSetStatus('⚠ '+data.error);cmpShowLoading(false);return;}t1=data.text1||t1;t2=data.text2||t2;document.getElementById('text1').value=t1;document.getElementById('text2').value=t2;cmpState.text1=t1;cmpState.text2=t2;}catch(err){cmpSetStatus('⚠ 서버 오류: '+err.message);cmpShowLoading(false);return;}cmpShowLoading(false);}if(!t1.trim()&&!t2.trim()){cmpSetStatus('⚠ 비교할 텍스트가 없습니다.');return;}cmpRunDiff(t1,t2);};
+    function cmpRunDiff(t1,t2){if(typeof diff_match_patch==='undefined'){cmpSetStatus('⚠ 라이브러리 로드 실패');return;}const dmp=new diff_match_patch(),diffs=dmp.diff_main(t1,t2);dmp.diff_cleanupSemantic(diffs);showSimilarity(calcSimilarity(t1,t2));let h1='',h2='';diffs.forEach(([op,text])=>{const esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');if(op===0){h1+=`<span class="diff-eq">${esc}</span>`;h2+=`<span class="diff-eq">${esc}</span>`;}else if(op===-1)h1+=`<span class="diff-del">${esc}</span>`;else h2+=`<span class="diff-ins">${esc}</span>`;});document.getElementById('diffBox1').innerHTML=h1;document.getElementById('diffBox2').innerHTML=h2;document.getElementById('compareResult').classList.add('show');cmpSetStatus('비교 완료');}
+    function calcSimilarity(t1,t2){const s1=new Set(t1.split(/\s+/).filter(Boolean)),s2=new Set(t2.split(/\s+/).filter(Boolean));if(!s1.size&&!s2.size)return 100;let inter=0;s1.forEach(w=>{if(s2.has(w))inter++;});const union=s1.size+s2.size-inter;return union?Math.round(inter/union*1000)/10:0;}
+    function showSimilarity(sim){const badge=document.getElementById('simBadge'),val=document.getElementById('simValue');val.textContent=sim+'%';val.className='sim-value '+(sim>=70?'sim-high':sim>=40?'sim-mid':'sim-low');badge.classList.add('show');}
+    window.cmpReset=()=>{cmpState.text1='';cmpState.text2='';cmpState.file1=null;cmpState.file2=null;['1','2'].forEach(i=>{document.getElementById('text'+i).value='';document.getElementById('fname'+i).style.display='none';document.getElementById('file'+i).value='';});document.getElementById('compareResult').classList.remove('show');document.getElementById('simBadge').classList.remove('show');cmpSetStatus('초기화되었습니다.');};
+    function cmpSetStatus(msg){document.getElementById('cmpStatus').textContent=msg;}
+    function cmpShowLoading(show){document.getElementById('cmpLoading').classList.toggle('show',show);document.getElementById('btnCompare').disabled=show;}
+  })();
+
+  let dvSelectedFile=null,dvColumns=[],dvRows=[],dvChartInstance=null,dvInited=false;
+  async function initDataViz(){if(dvInited)return;dvInited=true;const files=await fetch('/api/data/files').then(r=>r.json()).catch(()=>[]);renderDvFileList(files);}
+  function renderDvFileList(files){const listEl=document.getElementById('dv-file-list');listEl.innerHTML='';if(!files.length){listEl.innerHTML='<div class="loading-msg">파일 없음</div>';return;}files.forEach(f=>{const item=document.createElement('div');item.className='dv-file-item';item.textContent=f.filename;item.addEventListener('click',()=>selectDvFile(f.filename,item));listEl.appendChild(item);});}
+  async function selectDvFile(filename,el){document.querySelectorAll('.dv-file-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');dvSelectedFile=filename;const preview=await fetch('/api/data/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename})}).then(r=>r.json()).catch(()=>({columns:[],rows:[],total_rows:0}));dvColumns=preview.columns;dvRows=preview.rows;renderPreviewTable(preview);const analyze=await fetch('/api/data/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename})}).then(r=>r.json()).catch(()=>({recommendations:[]}));renderRecommendations(analyze.recommendations);renderManualControls(preview.columns);}
+  function renderPreviewTable(preview){document.getElementById('dv-preview-filename').textContent=dvSelectedFile;document.getElementById('dv-shape-info').textContent=`${preview.total_rows} 행 × ${preview.columns.length} 열 (미리보기: 최대 100행)`;document.getElementById('dv-table-head').innerHTML='<tr>'+preview.columns.map(c=>`<th>${c}</th>`).join('')+'</tr>';document.getElementById('dv-table-body').innerHTML=preview.rows.map(row=>'<tr>'+row.map(v=>`<td>${v??''}</td>`).join('')+'</tr>').join('');document.getElementById('dv-preview-panel').style.display='block';}
+  function renderRecommendations(recs){const panel=document.getElementById('dv-recommend-panel'),listEl=document.getElementById('dv-recommend-list');listEl.innerHTML='';if(!recs||!recs.length){panel.style.display='none';return;}const typeLabel={line:'라인',bar:'막대',scatter:'산점도',pie:'파이'};recs.forEach(rec=>{const card=document.createElement('div');card.className='dv-rec-card';card.innerHTML=`<div class="dv-rec-type">${typeLabel[rec.type]||rec.type}</div><div class="dv-rec-title">${rec.title}</div><div class="dv-rec-reason">${rec.reason}</div>`;card.addEventListener('click',()=>renderChart(rec.type,rec.x,rec.y,rec.title));listEl.appendChild(card);});panel.style.display='block';}
+  function renderManualControls(columns){const xSel=document.getElementById('dv-x-col'),ySel=document.getElementById('dv-y-col');xSel.innerHTML=columns.map(c=>`<option value="${c}">${c}</option>`).join('');ySel.innerHTML=columns.map(c=>`<option value="${c}">${c}</option>`).join('');if(columns.length>=2)ySel.selectedIndex=1;document.getElementById('dv-manual-panel').style.display='block';}
+  function renderManualChart(){renderChart(document.getElementById('dv-chart-type').value,document.getElementById('dv-x-col').value,document.getElementById('dv-y-col').value,`${document.getElementById('dv-x-col').value} vs ${document.getElementById('dv-y-col').value}`);}
+  function renderChart(type,xCol,yCol,title){if(dvChartInstance){dvChartInstance.destroy();dvChartInstance=null;}const xi=dvColumns.indexOf(xCol),yi=dvColumns.indexOf(yCol);let labels,dataValues;if(type==='pie'){const counts={};dvRows.forEach(row=>{const key=row[xi]!=null?String(row[xi]):'(없음)';counts[key]=(counts[key]||0)+(yi>=0&&row[yi]!=null?Number(row[yi]):1);});labels=Object.keys(counts);dataValues=Object.values(counts);}else if(type==='scatter'){labels=null;dataValues=dvRows.filter(r=>r[xi]!=null&&r[yi]!=null).map(r=>({x:Number(r[xi]),y:Number(r[yi])}));}else{const slice=dvRows.slice(0,100);labels=slice.map(r=>xi>=0&&r[xi]!=null?String(r[xi]):'');dataValues=slice.map(r=>yi>=0&&r[yi]!=null?Number(r[yi]):0);}const COLORS=['#4c6ef5','#748ffc','#3b5bdb','#69db7c','#fcc419','#f03e3e','#e64980','#cc5de8','#20c997','#fd7e14'];const chartData=type==='pie'?{labels,datasets:[{data:dataValues,backgroundColor:labels.map((_,i)=>COLORS[i%COLORS.length])}]}:type==='scatter'?{datasets:[{label:title,data:dataValues,backgroundColor:'#4c6ef5',pointRadius:4}]}:{labels,datasets:[{label:yCol,data:dataValues,backgroundColor:'#3b5bdb',borderColor:'#748ffc',borderWidth:2,fill:false}]};document.getElementById('dv-chart-title').textContent=title;const ctx=document.getElementById('dv-chart-canvas').getContext('2d');dvChartInstance=new Chart(ctx,{type:type==='scatter'?'scatter':type==='pie'?'pie':type,data:chartData,options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c5cae9',font:{family:'Noto Sans KR',size:12}}}},scales:type==='pie'?{}:{x:{ticks:{color:'#9e9e9e',maxRotation:45},grid:{color:'#1e2a4a'}},y:{ticks:{color:'#9e9e9e'},grid:{color:'#1e2a4a'}}}}});const panel=document.getElementById('dv-chart-panel');panel.style.display='block';panel.scrollIntoView({behavior:'smooth'});}
+  function clearChart(){if(dvChartInstance){dvChartInstance.destroy();dvChartInstance=null;}document.getElementById('dv-chart-panel').style.display='none';}
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadNotices();
+    loadNewsTab('keyword', '공조 시스템');
+    _newsCurrentTab    = 'keyword';
+    _newsCurrentFilter = '공조 시스템';
+    const firstBtn = document.querySelector('.news-toolbar-group .news-tab');
+    if (firstBtn) firstBtn.classList.add('active');
+    // 수집 상태 표시 (30초마다 갱신)
+    updateNewsStatus();
+    setInterval(updateNewsStatus, 30000);
+  });
+
+  /* ════ 뉴스 기능 ════ */
+
+  /* ── 필터 설정 모달 (admin 전용) ── */
+
+  // 기본 필터값 (API 실패 시 사용)
+  const DEFAULT_FILTER_SETTINGS = {
+    keyword_filter: ["차량", "자동차", "전기차", "EV", "하이브리드", "수소차",
+      "현대", "기아", "제네시스", "테슬라", "BMW", "벤츠", "토요타",
+      "에어컨", "히트펌프", "냉매", "HVAC", "인버터", "모터",
+      "배터리", "BMS", "열관리", "공조", "컴프레서", "냉각"],
+    car_filter: ["차량", "자동차", "전기차", "EV", "하이브리드", "수소차",
+      "현대", "기아", "제네시스", "테슬라", "BMW", "벤츠", "토요타",
+      "자율주행", "완성차", "충전", "주행거리", "배터리팩", "모터"],
+  };
+
+  let _filterSettings = JSON.parse(JSON.stringify(DEFAULT_FILTER_SETTINGS));
+
+  async function showFilterSettings() {
+    // 먼저 모달을 열고 로딩 표시
+    document.getElementById('filter-modal').classList.add('open');
+    document.getElementById('filter-save-msg').textContent = '';
+    document.getElementById('filter-tags-keyword').innerHTML = '<span style="font-size:12px;color:var(--text-muted);">불러오는 중...</span>';
+    document.getElementById('filter-tags-car').innerHTML = '<span style="font-size:12px;color:var(--text-muted);">불러오는 중...</span>';
+
+    // API에서 저장된 설정 가져오기
+    try {
+      const r = await fetch('/api/news/filter-settings');
+      if (r.ok) {
+        const data = await r.json();
+        if (data.keyword_filter) _filterSettings = data;
+      }
+    } catch(e) {
+      // API 실패해도 기본값으로 계속 진행
+    }
+
+    renderFilterTags('keyword', _filterSettings.keyword_filter);
+    renderFilterTags('car',     _filterSettings.car_filter);
+  }
+
+  function closeFilterModal(e) {
+    // e 없이 호출(× 버튼) 또는 배경 클릭 시 닫기
+    if (e && e.target !== document.getElementById('filter-modal')) return;
+    document.getElementById('filter-modal').classList.remove('open');
+  }
+
+  function renderFilterTags(type, words) {
+    const container = document.getElementById('filter-tags-' + type);
+    if (!container) return;
+    container.innerHTML = '';
+    if (!words || !words.length) {
+      container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">단어가 없습니다. 아래에서 추가하세요.</span>';
+      return;
+    }
+    words.forEach((word, i) => {
+      const tag = document.createElement('span');
+      tag.className = 'filter-tag';
+      tag.innerHTML = escapeHtml(word) +
+        ' <button onclick="removeFilterWord(\'' + type + '\',' + i + ')" title="삭제">×</button>';
+      container.appendChild(tag);
+    });
+  }
+
+  function addFilterWord(type, event) {
+    if (event && event.key !== 'Enter') return;
+    const input = document.getElementById('filter-input-' + type);
+    const word  = input.value.trim();
+    if (!word) return;
+    const list = _filterSettings[type + '_filter'];
+    if (list.includes(word)) {
+      input.value = '';
+      document.getElementById('filter-save-msg').textContent = '"' + word + '"은 이미 있습니다.';
+      return;
+    }
+    list.push(word);
+    renderFilterTags(type, list);
+    document.getElementById('filter-save-msg').textContent = '';
+    input.value = '';
+    input.focus();
+  }
+
+  function removeFilterWord(type, index) {
+    _filterSettings[type + '_filter'].splice(index, 1);
+    renderFilterTags(type, _filterSettings[type + '_filter']);
+  }
+
+  async function saveFilterSettings() {
+    const msgEl = document.getElementById('filter-save-msg');
+    msgEl.style.color = 'var(--text-muted)';
+    msgEl.textContent = '저장 중...';
+    try {
+      const r = await fetch('/api/news/filter-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(_filterSettings),
+      });
+      const result = await r.json();
+      if (result.status === 'success') {
+        msgEl.style.color = '#22c55e';
+        msgEl.textContent = '✅ 저장 완료! 다음 수집부터 적용됩니다.';
+      } else {
+        msgEl.style.color = '#ef4444';
+        msgEl.textContent = '⚠ 저장 실패: ' + (result.message || '');
+      }
+    } catch(e) {
+      msgEl.style.color = '#ef4444';
+      msgEl.textContent = '⚠ 오류: ' + e.message;
+    }
+  }
+
+  let _newsCurrentTab    = 'keyword';
+  let _newsCurrentFilter = '';
+
+  // 수집 상태 표시 (마지막 수집 시간)
+  async function updateNewsStatus() {
+    const el = document.getElementById('news-status-text');
+    if (!el) return;
+    try {
+      const r = await fetch('/api/news/status');
+      if (!r.ok) return;
+      const d = await r.json();
+
+      if (d.collecting) {
+        el.innerHTML = '<span class="status-busy">⏳ 수집 중입니다...</span>';
+        setTimeout(updateNewsStatus, 8000); // 8초 후 재확인
+        return;
+      }
+      if (!d.collected_at) {
+        el.textContent = '수집 기록 없음';
+      } else if (d.is_today) {
+        el.innerHTML = '<span class="status-ok">✅ 오늘 수집 완료</span> · ' + d.collected_at;
+      } else {
+        el.innerHTML = '<span class="status-old">⚠ 전날 데이터</span> · 마지막 수집: ' + d.collected_at;
+      }
+    } catch(e) {}
+  }
+
+  // 사이드바 or 툴바 버튼 클릭 → 해당 탭+필터로 이동
+  function loadNewsFilter(tab, filter) {
+    showSection('news');
+    _newsCurrentTab    = tab;
+    _newsCurrentFilter = filter;
+
+    // 사이드바 서브메뉴 active
+    document.querySelectorAll('#submenu-news .submenu-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#submenu-news .submenu-item').forEach(el => {
+      if (el.textContent.trim().replace(/^[^ ]+ /, '') === filter || el.textContent.trim() === filter) {
+        el.classList.add('active');
+      }
+    });
+
+    // 툴바 버튼 active
+    document.querySelectorAll('.news-tab').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.news-tab').forEach(btn => {
+      const txt = btn.textContent.trim();
+      if (txt === filter) btn.classList.add('active');
+    });
+
+    // 섹션 배지 업데이트
+    const LABEL = { keyword:'키워드 뉴스', front:'신문사 1면', car:'자동차 뉴스' };
+    document.getElementById('news-badge').textContent = filter + ' — ' + (LABEL[tab] || tab);
+
+    // 캐시에서 해당 탭 로드 후 필터링
+    loadNewsTab(tab, filter);
+  }
+
+  // 하위 호환: 기존 loadNews 호출 대비
+  function loadNews(tab) {
+    loadNewsFilter(tab, '');
+  }
+
+  // 직접 키워드 검색
+  async function searchNewsDirect() {
+    const input = document.getElementById('news-search-input');
+    const q = input.value.trim();
+    if (!q) { input.focus(); return; }
+
+    showSection('news');
+    document.getElementById('news-badge').textContent = '🔍 "' + q + '" 검색 중...';
+
+    // 버튼 비활성화
+    input.disabled = true;
+
+    const body = document.getElementById('news-body');
+    body.innerHTML = '<div class="news-loading"><div class="spinner"></div><span>"' + escapeHtml(q) + '" 검색 중...</span></div>';
+
+    try {
+      const r = await fetch('/api/news/search?q=' + encodeURIComponent(q));
+      if (!r.ok) throw new Error('서버 오류 ' + r.status);
+      const data = await r.json();
+
+      document.getElementById('news-badge').textContent = '🔍 "' + q + '" — ' + (data.articles?.length || 0) + '건';
+
+      // 탭 active 초기화
+      document.querySelectorAll('.news-tab').forEach(btn => btn.classList.remove('active'));
+
+      if (!data.articles || !data.articles.length) {
+        body.innerHTML = '<div class="news-empty"><div class="big-icon">📭</div><div>"' + escapeHtml(q) + '" 관련 기사가 없습니다.</div></div>';
+        return;
+      }
+      renderNewsArticles(data.articles, '');
+    } catch (e) {
+      body.innerHTML = '<div class="news-empty"><div class="big-icon">⚠️</div><div>검색 실패: ' + escapeHtml(e.message) + '</div></div>';
+    } finally {
+      input.disabled = false;
+    }
+  }
+
+  // 캐시에서 뉴스 불러오기 + 필터 적용
+  async function loadNewsTab(tab, filter) {
+    const body = document.getElementById('news-body');
+    body.innerHTML = '<div class="news-loading"><div class="spinner"></div><span>뉴스 불러오는 중...</span></div>';
+    try {
+      const r = await fetch('/api/news/' + tab);
+      if (!r.ok) throw new Error('서버 오류 ' + r.status);
+      const data = await r.json();
+
+      let articles = data.articles || [];
+
+      // 필터 적용
+      if (filter) {
+        if (tab === 'keyword') {
+          // keyword 탭: keyword 필드가 일치하는 것
+          articles = articles.filter(a => a.keyword === filter);
+        } else if (tab === 'front') {
+          // front 탭: source 필드가 일치하는 것
+          articles = articles.filter(a => a.source === filter);
+        } else if (tab === 'car') {
+          // car 탭: keyword 필드가 일치하는 것 (keyword 탭과 동일 방식)
+          articles = articles.filter(a => a.keyword === filter);
+        }
+      }
+
+      if (!articles.length) {
+        const isNoCache = !data.articles || !data.articles.length;
+        body.innerHTML = '<div class="news-empty"><div class="big-icon">📭</div>' +
+          '<div>' + (isNoCache
+            ? (ROLE === 'admin' ? '수집 버튼을 눌러 뉴스를 가져오세요.' : '관리자가 아직 뉴스를 수집하지 않았습니다.')
+            : '"' + escapeHtml(filter) + '" 관련 기사가 없습니다.') +
+          '</div></div>';
+        return;
+      }
+
+      const cacheNotice = data._from_cache
+        ? '<div class="news-cache-notice">⚠ 전날 수집 데이터입니다 (' + (data.date || '') + ') — 오전 7시 이후 갱신됩니다.</div>'
+        : '';
+      renderNewsArticles(articles, cacheNotice);
+    } catch (e) {
+      body.innerHTML = '<div class="news-empty"><div class="big-icon">⚠️</div><div>불러오기 실패: ' + escapeHtml(e.message) + '</div></div>';
+    }
+  }
+
+  // admin 수동 수집 버튼
+  async function fetchNews() {
+    const btn  = document.getElementById('news-fetch-btn');
+    const body = document.getElementById('news-body');
+    const statusEl = document.getElementById('news-status-text');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ 수집 중...'; }
+    if (statusEl) statusEl.innerHTML = '<span class="status-busy">⏳ 수집 중입니다...</span>';
+    body.innerHTML = '<div class="news-loading"><div class="spinner"></div><span>뉴스를 수집 중입니다. 약 30~50초 소요됩니다...</span></div>';
+    try {
+      const r = await fetch('/api/news/fetch', { method: 'POST' });
+      if (!r.ok) throw new Error('서버 오류 ' + r.status);
+      const result = await r.json();
+      if (result.status === 'busy') {
+        body.innerHTML = '<div class="news-empty"><div class="big-icon">⏳</div><div>' + escapeHtml(result.message) + '</div></div>';
+        return;
+      }
+      // 수집 완료 후 현재 탭+필터로 다시 로드 + 상태 갱신
+      await loadNewsTab(_newsCurrentTab, _newsCurrentFilter);
+      updateNewsStatus();
+    } catch (e) {
+      body.innerHTML = '<div class="news-empty"><div class="big-icon">⚠️</div><div>수집 실패: ' + escapeHtml(e.message) + '</div></div>';
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '▶ 뉴스 수집 시작'; }
+    }
+  }
+
+  function renderNewsArticles(articles, cacheNotice) {
+    window._newsArticles = articles;
+    const body = document.getElementById('news-body');
+    if (!articles.length) {
+      body.innerHTML = '<div class="news-empty"><div class="big-icon">📭</div><div>수집된 기사가 없습니다.</div></div>';
+      return;
+    }
+    body.innerHTML = (cacheNotice || '') + articles.map(function(a, i) {
+      return '<div class="news-card" onclick="openNewsModal(' + i + ')">' +
+        '<div class="news-card-header">' +
+          '<div class="news-meta">' +
+            '<span class="news-source">' + escapeHtml(a.source || '') + '</span>' +
+            (a.original_source ? '<span class="news-keyword" style="background:#78350f;color:#fcd34d;">' + escapeHtml(a.original_source) + '</span>' : '') +
+            (a.keyword ? '<span class="news-keyword">' + escapeHtml(a.keyword) + '</span>' : '') +
+            '<span class="news-date">' + escapeHtml(a.date || '') + '</span>' +
+          '</div>' +
+          '<div class="news-title">' + escapeHtml(a.title || '제목 없음') + '</div>' +
+        '</div>' +
+        (a.summary ? '<div class="news-summary"><div class="news-summary-label">■ 요약</div>' + escapeHtml(a.summary) + '</div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  /* ── 뉴스 모달 ── */
+  function openNewsModal(idx) {
+    const a = window._newsArticles[idx];
+    if (!a) return;
+
+    document.getElementById('news-modal-title').textContent = a.title || '제목 없음';
+    document.getElementById('news-modal-meta').innerHTML =
+      '<span class="news-source">' + escapeHtml(a.source || '') + '</span>' +
+      (a.keyword ? '<span class="news-keyword">' + escapeHtml(a.keyword) + '</span>' : '') +
+      '<span class="news-date">' + escapeHtml(a.date || '') + '</span>';
+
+    let bodyHtml = '';
+
+    // 요약
+    if (a.summary) {
+      bodyHtml += '<div class="news-modal-summary"><div class="news-modal-summary-label">■ 요약</div>' + escapeHtml(a.summary) + '</div>';
+    }
+
+    // 이미지
+    if (a.images && a.images.length) {
+      bodyHtml += '<div class="news-modal-images">' +
+        a.images.map(function(img) {
+          return '<div class="news-modal-img-wrap">' +
+            '<img src="' + escapeHtml(img.url) + '" onerror="this.parentElement.style.display=\'none\'">' +
+            (img.caption ? '<div class="news-modal-img-caption">' + escapeHtml(img.caption) + '</div>' : '') +
+            '</div>';
+        }).join('') + '</div>';
+    }
+
+    // 본문
+    if (a.full_text) {
+      bodyHtml += '<div class="news-modal-fulltext">' + escapeHtml(a.full_text) + '</div>';
+    }
+
+    // 표
+    if (a.tables && a.tables.length) {
+      bodyHtml += a.tables.map(function(t) {
+        return '<div class="news-modal-tables">' + t + '</div>';
+      }).join('');
+    }
+
+    // 링크 버튼: 본문 없으면 "본문 불러오기", 있으면 "원문 사이트"만
+    if (a.original_url) {
+      if (!a.full_text) {
+        // 본문이 없는 경우 - 크롤링 버튼 표시
+        bodyHtml += '<div class="news-modal-link">' +
+          '<a href="#" onclick="loadFullArticle(\'' + a.original_url.replace(/'/g, "\\'") + '\',' + idx + '); return false;">📖 본문 전체 불러오기</a>' +
+          '<a href="' + escapeHtml(a.original_url) + '" target="_blank">🔗 원문 사이트 →</a>' +
+          '</div>';
+      } else {
+        // 본문이 있는 경우 - 원문 링크만
+        bodyHtml += '<div class="news-modal-link">' +
+          '<a href="' + escapeHtml(a.original_url) + '" target="_blank">🔗 원문 사이트 →</a>' +
+          '</div>';
+      }
+    }
+
+    document.getElementById('news-modal-body').innerHTML = bodyHtml;
+    document.getElementById('news-modal').classList.add('open');
+  }
+
+  // ── 본문 크롤링 (모달 내 버튼 클릭 시) ──
+  let _articleLoading = false; // 중복 호출 방지
+
+  async function loadFullArticle(url, idx) {
+    if (_articleLoading) return; // 이미 로딩 중이면 무시
+    _articleLoading = true;
+
+    const body = document.getElementById('news-modal-body');
+
+    // 기존 내용 유지하면서 하단에 로딩 표시 추가
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'article-loading';
+    loadingDiv.className = 'news-modal-loading';
+    loadingDiv.innerHTML = '<div class="spinner"></div><span>본문을 불러오는 중입니다...</span>';
+    // 링크 버튼 숨기기
+    const linkRow = body.querySelector('.news-modal-link');
+    if (linkRow) linkRow.style.display = 'none';
+    body.appendChild(loadingDiv);
+
+    try {
+      // ✅ 버그수정: URL을 그대로 전달 (이미 인코딩된 경우 이중인코딩 방지)
+      // 서버 쪽에서 request.args.get("url") 로 받으므로 한 번만 인코딩
+      const encodedUrl = encodeURIComponent(decodeURIComponent(url)); // 정규화 후 인코딩
+      const r = await fetch('/api/news/article?url=' + encodedUrl);
+      if (!r.ok) throw new Error('서버 오류 ' + r.status);
+      const data = await r.json();
+
+      if (!data.full_text && !data.summary) {
+        throw new Error('본문을 찾을 수 없습니다');
+      }
+
+      // 기사 데이터 업데이트
+      if (window._newsArticles && window._newsArticles[idx]) {
+        if (data.full_text) window._newsArticles[idx].full_text = data.full_text;
+        if (data.summary)   window._newsArticles[idx].summary   = data.summary;
+        if (data.images && data.images.length) window._newsArticles[idx].images = data.images;
+        if (data.tables && data.tables.length) window._newsArticles[idx].tables = data.tables;
+      }
+      _articleLoading = false;
+      // 모달 다시 렌더링
+      openNewsModal(idx);
+
+    } catch(e) {
+      _articleLoading = false;
+      const ld = document.getElementById('article-loading');
+      if (ld) {
+        ld.innerHTML = '⚠ ' + escapeHtml(e.message) + ' — <a href="' + escapeHtml(url) + '" target="_blank" style="color:var(--accent-light)">원문 사이트에서 확인하세요 →</a>';
+        ld.style.color = 'var(--text-muted)';
+      }
+      // 링크 버튼 다시 표시
+      if (linkRow) linkRow.style.display = '';
+    }
+  }
+
+  function closeNewsModal() {
+    document.getElementById('news-modal').classList.remove('open');
+    document.getElementById('news-modal-body').innerHTML = '';
+  }
+
+  document.getElementById('news-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeNewsModal();
+  });
+
+
+</script>
+</body>
+</html>
