@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AW2026 스마트 제조혁신 산업전 보고서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', '맑은 고딕', sans-serif;
+    font-size: 15px;
+    background: #f0f2f5;
+    color: #1a2332;
+    line-height: 1.75;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 0 40px rgba(0,0,0,0.12);
+  }
+
+  /* ══ 헤더 ══ */
+  .header {
+    background: linear-gradient(135deg, #0a1628 0%, #0d2545 40%, #1a3a6b 100%);
+    padding: 52px 60px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 320px; height: 320px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(0,168,255,0.18);
+    border: 1px solid rgba(0,168,255,0.4);
+    color: #5ecfff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .header h1 {
+    font-size: 30px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+  .header h1 span { color: #00a8ff; }
+  .header-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.3px;
+    margin-bottom: 28px;
+  }
+  .header-meta {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .header-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+  }
+  .header-meta-item .dot {
+    width: 7px; height: 7px;
+    background: #00a8ff;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ══ 공통 섹션 ══ */
+  .section {
+    padding: 44px 60px;
+    border-bottom: 1px solid #eef0f4;
+    background: #fff;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0a1628;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #e6eaf0;
+  }
+  .section-title::before {
+    content: '';
+    display: block;
+    width: 5px; height: 22px;
+    background: linear-gradient(180deg, #00a8ff, #0062cc);
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: #0062cc;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ══ 행사 개요 카드 ══ */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .overview-card {
+    background: #f7f9fc;
+    border: 1px solid #dde3ef;
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .overview-card .label {
+    font-size: 11px;
+    color: #7a8ba0;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .overview-card .value {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0a1628;
+    line-height: 1.3;
+  }
+  .overview-card .value.blue { color: #0062cc; }
+
+  /* ══ 인사이트 박스 ══ */
+  .insight-box {
+    background: #f4f8ff;
+    border-left: 5px solid #0062cc;
+    border-radius: 0 10px 10px 0;
+    padding: 18px 22px;
+    font-size: 14.5px;
+    color: #253050;
+    margin-bottom: 24px;
+    line-height: 1.85;
+  }
+  .insight-box strong { color: #0044aa; }
+
+  /* ══ 표 ══ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  thead tr { background: #0a1628; color: #fff; }
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+  tbody tr { border-bottom: 1px solid #eef0f4; transition: background 0.15s; }
+  tbody tr:hover { background: #f4f8ff; }
+  tbody tr:nth-child(even) { background: #fafbfd; }
+  tbody tr:nth-child(even):hover { background: #edf3fc; }
+  tbody td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    color: #2c3e55;
+    font-size: 14px;
+  }
+
+  /* ══ 태그 ══ */
+  .tag {
+    display: inline-block;
+    padding: 3px 11px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .tag-blue   { background: #deeaff; color: #0044bb; }
+  .tag-green  { background: #d8f5e8; color: #0a6e38; }
+  .tag-orange { background: #fff0dc; color: #a04c00; }
+  .tag-purple { background: #ede8ff; color: #5510b8; }
+  .tag-red    { background: #ffe8e8; color: #aa0000; }
+
+  /* ══ 방향성 카드 ══ */
+  .direction-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+  .direction-card {
+    background: #fff;
+    border: 1px solid #dde3ef;
+    border-radius: 12px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .direction-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .dc-blue::before   { background: linear-gradient(90deg, #0062cc, #00a8ff); }
+  .dc-green::before  { background: linear-gradient(90deg, #0a7a3e, #1abc6f); }
+  .dc-orange::before { background: linear-gradient(90deg, #b85c00, #ff8c00); }
+  .direction-card .d-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #9aaabf;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .direction-card h4 {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0a1628;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .direction-card p {
+    font-size: 13.5px;
+    color: #4a5a6e;
+    line-height: 1.8;
+  }
+
+  /* ══ 기업 카드 ══ */
+  .company-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .company-card {
+    background: #fff;
+    border: 1px solid #dde3ef;
+    border-radius: 14px;
+    padding: 22px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .company-card:hover {
+    box-shadow: 0 8px 28px rgba(0,98,204,0.13);
+    transform: translateY(-3px);
+  }
+  .company-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .company-logo {
+    width: 46px; height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .company-num { font-size: 12px; color: #aab5c5; font-weight: 700; }
+  .company-name { font-size: 16px; font-weight: 800; color: #0a1628; margin-bottom: 4px; }
+  .company-type { font-size: 12px; color: #7a8ba0; margin-bottom: 14px; font-weight: 500; }
+  .company-desc { font-size: 13.5px; color: #3a4a5e; line-height: 1.75; margin-bottom: 14px; }
+  .company-product {
+    background: #f0f6ff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .company-product .prod-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0062cc;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+  .company-product .prod-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0a1628;
+    margin-top: 6px;
+  }
+  .company-product .prod-desc {
+    font-size: 13px;
+    color: #4a5a6e;
+    margin-top: 4px;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .company-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .c-tag {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  /* ══ 세미나 세션 섹션 (화이트 배경) ══ */
+  .seminar-block {
+    padding: 44px 60px;
+    border-bottom: 1px solid #eef0f4;
+    background: #f8fafd;
+  }
+  .seminar-block-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0a1628;
+    margin-bottom: 32px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #dde3ef;
+  }
+  .seminar-block-title::before {
+    content: '';
+    display: block;
+    width: 5px; height: 22px;
+    background: linear-gradient(180deg, #00a8ff, #0062cc);
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .seminar-topic {
+    margin-bottom: 36px;
+  }
+  .seminar-topic:last-child { margin-bottom: 0; }
+
+  .seminar-topic-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0a1628;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dde3ef;
+  }
+  .s-num-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: #0062cc;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .seminar-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .seminar-card {
+    background: #fff;
+    border: 1px solid #dde3ef;
+    border-radius: 14px;
+    padding: 22px;
+    transition: box-shadow 0.2s;
+  }
+  .seminar-card:hover { box-shadow: 0 6px 22px rgba(0,98,204,0.10); }
+
+  .seminar-card-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .seminar-card-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .sc-blue   { background: #deeaff; }
+  .sc-cyan   { background: #d8f4ff; }
+  .sc-violet { background: #ede8ff; }
+  .sc-green  { background: #d8f5e8; }
+  .sc-amber  { background: #fff3d0; }
+
+  .seminar-card-session {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #0062cc;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .seminar-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0a1628;
+  }
+  .seminar-card-body {
+    font-size: 14px;
+    color: #3a4a5e;
+    line-height: 1.85;
+  }
+  .seminar-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 14px;
+  }
+  .s-tag {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: #edf3fc;
+    color: #0044aa;
+    border: 1px solid #c8d8f0;
+  }
+
+  .topic-divider {
+    border: none;
+    border-top: 1px dashed #d0d8e8;
+    margin: 32px 0;
+  }
+
+  /* ══ 느낀 점 섹션 ══ */
+  .feeling-section {
+    padding: 44px 60px;
+    background: #fff;
+    border-bottom: 1px solid #eef0f4;
+  }
+  .feeling-box {
+    background: linear-gradient(135deg, #fffbf0 0%, #fff8e6 100%);
+    border: 1px solid #f0d890;
+    border-left: 5px solid #e6a800;
+    border-radius: 0 14px 14px 0;
+    padding: 28px 32px;
+  }
+  .feeling-box-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #b07800;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .feeling-box p {
+    font-size: 14.5px;
+    color: #2c3a20;
+    line-height: 1.95;
+  }
+  .feeling-box p strong { color: #b05000; }
+
+  /* ══ 푸터 ══ */
+  .footer {
+    background: #0a1628;
+    padding: 18px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer span { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+  /* ══ 로고 색상 ══ */
+  .bg-blue   { background: linear-gradient(135deg, #0062cc, #0099ff); }
+  .bg-teal   { background: linear-gradient(135deg, #007b7b, #00b8b8); }
+  .bg-green  { background: linear-gradient(135deg, #1a7a3e, #27ae60); }
+  .bg-orange { background: linear-gradient(135deg, #cc5500, #ff8c00); }
+  .bg-purple { background: linear-gradient(135deg, #5b00cc, #9b59b6); }
+  .bg-navy   { background: linear-gradient(135deg, #0a1628, #1a3060); }
+  .bg-red    { background: linear-gradient(135deg, #cc0000, #e74c3c); }
+  .bg-dark   { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+  .bg-cyan   { background: linear-gradient(135deg, #006699, #00aacc); }
+
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ 헤더 ══ -->
+  <div class="header">
+    <div class="header-badge">산업전시회 분석 보고서</div>
+    <h1>AW2026 <span>스마트 제조혁신 AX</span> 산업전<br>전시회 참관 보고서</h1>
+    <p class="header-sub">Automation World 2026 · 코엑스 · Smart Manufacturing Innovation Exhibition</p>
+    <div class="header-meta">
+      <div class="header-meta-item"><span class="dot"></span> 개최지 : 서울 코엑스 (COEX)</div>
+      <div class="header-meta-item"><span class="dot"></span> 분야 : 피지컬AI / 로보틱스 / AI팩토리 / 자율제조 / 휴머노이드</div>
+      <div class="header-meta-item"><span class="dot"></span> 작성일 : 2026년 3월 5일</div>
+    </div>
+  </div>
+
+  <!-- ══ 1. 행사 개요 ══ -->
+  <div class="section">
+    <div class="section-title"><span class="section-num">1</span>행사 개요 및 참관 목적</div>
+
+    <div class="overview-grid">
+      <div class="overview-card">
+        <div class="label">행사명</div>
+        <div class="value">AW2026</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">개최 장소</div>
+        <div class="value blue">코엑스 (COEX)</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">핵심 키워드</div>
+        <div class="value">AI · DX · 비전</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">참관 기업</div>
+        <div class="value blue">500개 업체 / 2,300부스</div>
+      </div>
+    </div>
+
+    <div class="insight-box">
+      <strong>참관 목적 및 배경</strong><br>
+      - 국내 제조업의 AX(AI 전환) &amp; DX(디지털 전환) 최신 트렌드 및 미래 제조 경쟁력 핵심 동향 파악<br>
+      - 머신비전, 산업용 AI, 금형 혁신 및 스마트팩토리 통합 플랫폼 등 업계 선도 기업들이 선보인 차세대 제품 라인업 확인<br>
+      - 향후 기업 간 기술 협력 가능성 검토 및 본사 제조 현장 도입 방향 모색
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>산업군 구분</th>
+          <th>세부 내용</th>
+          <th>주요 업체</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-blue">AI 자동화</span></td>
+          <td>딥러닝 기반 불량 검출, ADC 시스템, 3D 비전</td>
+          <td>라온피플, 이미지포커스, 메가페이즈</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-green">DX 플랫폼</span></td>
+          <td>CAD/CAM 자동화, MES, APS, 디지털 트윈</td>
+          <td>NCASS AIX, 이즈파크, SLEXN</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-orange">검사 장비</span></td>
+          <td>2차전지·디스플레이·반도체 머신비전 검사</td>
+          <td>브이원텍</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-purple">데이터 수요예측 AI</span></td>
+          <td>시계열 데이터 기반 제조·공급망 예측 솔루션</td>
+          <td>임팩티브AI</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ 2. 산업군별 기술 현황 ══ -->
+  <div class="section">
+    <div class="section-title"><span class="section-num">2</span>산업군별 기술 발전 진행 현황</div>
+
+    <div class="insight-box">
+      <strong>[머신 비전]</strong><br>
+    </div>
+    <div class="direction-grid">
+      <div class="direction-card dc-blue">
+        <div class="d-num">Direction 01</div>
+        <h4>AI 딥러닝 기반 품질 검사</h4>
+        <p>- 규칙 기반 검사에서 딥러닝 모델로 전환<br>
+           - 미세 결함까지 자동 분류하고 공정 피드백 루프를 구성하여 불량률 획기적 감소</p>
+      </div>
+      <div class="direction-card dc-green">
+        <div class="d-num">Direction 02</div>
+        <h4>엣지 AI + FPGA 실시간 고속 처리</h4>
+        <p>- 초당 수천 프레임 처리를 위한 FPGA 병렬연산 구조와 온디바이스 AI 추론을 결합<br>
+           - 클라우드 의존 없이 현장 즉시 대응 가능</p>
+      </div>
+      <div class="direction-card dc-orange">
+        <div class="d-num">Direction 03</div>
+        <h4>2.5D / 3D 비전 정밀 형상 분석</h4>
+        <p>- 2D 한계를 극복한 2.5D·3D 측정 기술 확산<br>
+           - 반도체·글래스·2차전지 분야에서 마이크로 단위 표면 결함 및 높이 정보까지 정밀 검출</p>
+      </div>
+    </div>
+
+    <div class="insight-box">
+      <strong>[산업용 제품]</strong><br>
+          </div>
+    <div class="direction-grid">
+      <div class="direction-card dc-blue">
+        <div class="d-num">Direction 01</div>
+        <h4>제조 공정 지능화 및 설계 자동화</h4>
+        <p>- 형상 인식 AI를 통한 CAM 공정 자동 설계로 리드타임 70% 단축<br>
+           - 딥플로우 모델 기반의 시계열 데이터 증강으로 재고 비용 절감 및 공급망 최적화<br>
+           
+      </div>
+      <div class="direction-card dc-green">
+        <div class="d-num">Direction 02</div>
+        <h4>고성능 비전 시스템 및 품질 검사</h4>
+        <p>- 초당 수백 프레임 처리가 가능한 고해상도 산업용 머신비전 카메라 지원<br>
+           - AI 기반 자동 결함 분류를 통한 검사-분류-공정개선 자동화 순환 구조 완성</p>
+      </div>
+      <div class="direction-card dc-orange">
+        <div class="d-num">Direction 03</div>
+        <h4>차세대 생성형 AI 및 지식 자산화</h4>
+        <p>- 내부 지식 기반 RAG/LLM 기술을 통해 데이터 자산화<br>
+           - AI 챗봇을 활용하여 기업 내부 데이터를 자연어로 검색하고 답변하는 환경 조성<br>
+      </div>
+    </div>
+
+    <div class="insight-box">
+      <strong>[금형 제작 기업]</strong><br>
+          </div>
+    <div class="direction-grid">
+      <div class="direction-card dc-blue">
+        <div class="d-num">Direction 01</div>
+        <h4>지능형 설계 및 제조 공정 자동화</h4>
+        <p>- 2031년까지 설계부터 출하까지 전 공정 무인화 생산 체계 구축<br>
+           - AI 기반의 가공 순서 및 공구 선택 자동 추천 기능을 구현하여 숙련자 의존도 절감</p>
+      </div>
+      <div class="direction-card dc-green">
+        <div class="d-num">Direction 02</div>
+        <h4>첨단 비전 시스템 및 품질 관리 지능화</h4>
+        <p>- 고해상도 카메라와 IP7 등급 방진방수 기능으로 검사 공정을 자동화<br>
+           - 3D 비전 기술을 도입, 기존 수동 측정을 대체하고 오차 예측 모델 적용</p>
+      </div>
+      <div class="direction-card dc-orange">
+        <div class="d-num">Direction 03</div>
+        <h4>통합 데이터 플랫폼 및 기업용 AI 확산</h4>
+        <p>- 설계, 생산, 품질, 설비 데이터 통합 관리하는 디지털 전환(DX) 실현<br>
+           - 재고 최적화와 디지털 트윈 기반 가상 검증으로 비용 절감</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 3. 참관 기업 소개 ══ -->
+  <div class="section">
+    <div class="section-title"><span class="section-num">3</span>참관 기업 소개 및 최신 제품 분석</div>
+
+    <div class="company-grid">
+
+      <div class="company-card">
+        <div class="company-header">
+          <div class="company-logo bg-blue">SL</div>
+          <span class="company-num">01</span>
+        </div>
+        <div class="company-name">SLEXN (슬렉슨)</div>
+        <div class="company-type">소프트웨어 기반 IT 솔루션 &amp; 컨설팅</div>
+        <div class="company-desc">온프레미스(On-premise) LLM 인프라와 AI 에이전트 기반 지능형 소프트웨어 개발 공정 플랫폼 제공 및 R&amp;D 생산성 극대화 솔루션 제공</div>
+        <div class="company-product">
+          <div class="prod-label">본사 적용 가능 방안</div>
+          <div class="prod-name">설계 지식의 자산화</div>
+          <div class="prod-desc">설계 도면, 실험 데이터, 과거 불량 사례 등을 폐쇄망 AI 서버에 학습하여 외부 유출 없이 챗봇 형태의 질의응답</div>
+          <div class="prod-name">생산 라인 연동 AI 구축</div>
+          <div class="prod-desc">MES의 실시간 데이터와 슬렉슨 AI 솔루션 연동하여 이상 징후 AI 실시간 모니터링 및 불량 예측</div>
+        </div>
+        <div class="company-tags">
+          <span class="c-tag tag-blue">IT인프라</span>
+          <span class="c-tag tag-green">DevOps</span>
+          <span class="c-tag tag-purple">컨설팅</span>
+        </div>
+      </div>
+
+      <div class="company-card">
+        <div class="company-header">
+          <div class="company-logo bg-teal">IF</div>
+          <span class="company-num">02</span>
+        </div>
+        <div class="company-name">IMAGEFOCUS (이미지포커스)</div>
+        <div class="company-type">머신비전 Total Solution 전문기업</div>
+        <div class="company-desc">카메라, 렌즈, 조명부터 S/W 라이브러리까지 머신비전 시스템 구성을 위한 H/W와 S/W 제공 머신비전 솔루션 전문 기업</div>
+        <div class="company-product">
+          <div class="prod-label">본사 적용 가능 방안</div>
+          <div class="prod-name">전동 컴프레서 외관 검사</div>
+          <div class="prod-desc">전동 컴프레서 외관 미세 크랙이나 가공 칩을 학습된 AI 딥러닝 모델로 실시간 판독</div>
+          <div class="prod-name">부품 조립 정밀도 및 단차 측정</div>
+          <div class="prod-desc">부품 조립 직후 부품간 단차나 조립 정밀도를 딥러닝 비전을 통해 판독</div>
+        </div>
+        <div class="company-tags">
+          <span class="c-tag tag-blue">머신비전</span>
+          <span class="c-tag tag-orange">산업카메라</span>
+          <span class="c-tag tag-green">AOI</span>
+        </div>
+      </div>
+
+      <div class="company-card">
+        <div class="company-header">
+          <div class="company-logo bg-green">LP</div>
+          <span class="company-num">03</span>
+        </div>
+        <div class="company-name">LAON PEOPLE (라온피플)</div>
+        <div class="company-type">AI 머신비전 · 산업AI 플랫폼 전문기업</div>
+        <div class="company-desc">딥러닝 알고리즘과 영상신호처리 기술을 결합한 AI VISION 통합 솔루션 기업. 스마트팩토리, 스마트시티, 의료영상, 지능형 교통체계 분야에 걸쳐 AI 플랫폼 제공.</div>
+        <div class="company-product">
+          <div class="prod-label">본사 적용 가능 방안</div>
+          <div class="prod-name">전동 컴프레서 부품 검사</div>
+          <div class="prod-desc">비전 시스템에서 추출한 정밀 측정값과 불량 이미지 학습을 품질 예측 모델 정확도 향상</div>
+          <div class="prod-name">예지보전 및 설비 가동률 최적화</div>
+          <div class="prod-desc">비전 센서를 통해 조립 라인 및 가공 장비 움직임 모니터링을 통해 설비 고장 및 불량 예측</div>
+        </div>
+        <div class="company-tags">
+          <span class="c-tag tag-blue">딥러닝</span>
+          <span class="c-tag tag-green">ADC</span>
+          <span class="c-tag tag-purple">AI플랫폼</span>
+        </div>
+      </div>
+
+      <div class="company-card">
+        <div class="company-header">
+          <div class="company-logo bg-orange">V1</div>
+          <span class="company-num">04</span>
+        </div>
+        <div class="company-name">V-ONE TECH (브이원텍)</div>
+        <div class="company-type">머신비전 기반 정밀 검사장비 제조기업</div>
+        <div class="company-desc">디스플레이 압흔 검사장비 세계 최고 수준의 기술력 보유.</div>
+        <div class="company-product">
+          <div class="prod-label">본사 적용 가능 방안</div>
+          <div class="prod-name">자율주행 로봇을 활용한 물류 자동화</div>
+          <div class="prod-desc">부품이나 완제품에 대해 조립 라인 &amp; 창고 이송 과정에서 자율주행 로봇을 통해 물류 효율 극대화</div>
+        </div>
+        <div class="company-tags">
+          <span class="c-tag tag-orange">2차전지</span>
+          <span class="c-tag tag-blue">머신비전</span>
+          <span class="c-tag tag-green">AMR로봇</span>
+        </div>
+      </div>
+
+      <div class="company-card">
+        <div class="company-header">
+          <div class="company-logo bg-purple">MP</div>
+          <span class="company-num">05</span>
+        </div>
+        <div class="company-name">MEGA PHASE (메가페이즈)</div>
+        <div class="company-type">FPGA 기반 고속 머신비전 기술기업</div>
+        <div class="company-desc">FPGA 탑재 카메라를 활용한 2.5D 머신비전 솔루션 선도기업.</div>
+        <div class="company-product">
+          <div class="prod-label">본사 적용 가능 방안</div>
+          <div class="prod-name">고해상도 광학계를 통한 가공 결함 정밀 추출</div>
+          <div class="prod-desc">스크롤이나 하우징의 버 부분이나 부품 결합부의 미세 가공 판독</div>
+        </div>
+        <div class="company-tags">
+          <span class="c-tag tag-purple">FPGA</span>
+          <span class="c-tag tag-blue">2.5D비전</span>
+          <span class="c-tag tag-orange">반도체검사</span>
+        </div>
+      </div>
+
+      <div class="company-card">
+        <div class="company-header">
+          <div class="company-logo bg-cyan">IA</div>
+          <span class="company-num">06</span>
+        </div>
+        <div class="company-name">임팩티브AI (Impactive AI)</div>
+        <div class="company-type">AI 기반 수요예측 솔루션 전문기업</div>
+        <div class="company-desc">AI를 통해 제조 및 유통 과정 수요 예측 및 재고 최적화 솔루션 제공</div>
+        <div class="company-product">
+          <div class="prod-label">본사 적용 가능 방안</div>
+          <div class="prod-name">자동차 시장 수요 기반 생산 계획 최적화</div>
+          <div class="prod-desc">완성차 업체의 발주 동향과 시장 데이터를 분석하여 예측된 수요에 맞춰 생산 스케줄 자동 조정을 통해 과잉 재고 방지</div>
+        </div>
+        <div class="company-tags">
+          <span class="c-tag tag-blue">수요예측</span>
+          <span class="c-tag tag-green">딥플로우</span>
+          <span class="c-tag tag-purple">공급망AI</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ 4. 세미나 세션 요약 ══ -->
+  <div class="seminar-block">
+    <div class="seminar-block-title">
+      <span class="section-num">4</span>세미나 세션 주요 내용
+    </div>
+
+    <!-- 1) 머신비전 AI -->
+    <div class="seminar-topic">
+      <div class="seminar-topic-title">
+        <span class="s-num-badge">1</span>
+        머신비전 AI의 기술 발전
+      </div>
+      <div class="seminar-card-grid">
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-blue">🔍</div>
+            <div>
+              <div class="seminar-card-session">Session 01</div>
+              <div class="seminar-card-title">AI 기반 자율 검사 시스템</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            딥러닝 기반 머신비전 AI는 기존 룰 기반 검사 방식의 한계를 넘어, 미세 결함 탐지와 실시간 품질 판별 정확도를 비약적으로 높이고 있다. 특히 제로샷 학습과 파운데이션 모델 적용으로 소량 데이터 환경에서도 높은 성능을 구현하며, 현장 적용 사례가 빠르게 확산되고 있다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">딥러닝</span>
+            <span class="s-tag">결함 탐지</span>
+            <span class="s-tag">제로샷 학습</span>
+            <span class="s-tag">파운데이션 모델</span>
+          </div>
+        </div>
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-cyan">⚡</div>
+            <div>
+              <div class="seminar-card-session">핵심 기술</div>
+              <div class="seminar-card-title">FPGA · 엣지 AI 고속 처리</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            초당 수천 프레임 처리를 위한 FPGA 병렬연산 구조와 온디바이스 AI 추론을 결합하여 클라우드 의존 없이 현장 즉시 대응이 가능하다. 2.5D/3D 비전으로 마이크로 단위 결함까지 정밀 검출하는 기술이 상용화 단계에 진입했다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">FPGA</span>
+            <span class="s-tag">엣지 AI</span>
+            <span class="s-tag">3D 비전</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="topic-divider">
+
+    <!-- 2) 스마트 팩토리 -->
+    <div class="seminar-topic">
+      <div class="seminar-topic-title">
+        <span class="s-num-badge">2</span>
+        제조 데이터를 활용한 스마트 팩토리
+      </div>
+      <div class="seminar-card-grid">
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-green">🏭</div>
+            <div>
+              <div class="seminar-card-session">Session 02</div>
+              <div class="seminar-card-title">디지털 트윈 &amp; 예지보전</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            공정 전반에서 수집되는 센서·설비 데이터를 AI로 분석해 예지보전과 공정 최적화를 실현하는 스마트 팩토리 솔루션이 주목받았다. 디지털 트윈과 실시간 대시보드를 결합해 생산 현황을 가시화하고, 불량률 감소와 가동률 향상을 동시에 달성하는 구체적인 성과 사례가 다수 소개되었다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">디지털 트윈</span>
+            <span class="s-tag">예지보전</span>
+            <span class="s-tag">공정 최적화</span>
+            <span class="s-tag">실시간 모니터링</span>
+          </div>
+        </div>
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-cyan">📊</div>
+            <div>
+              <div class="seminar-card-session">데이터 활용</div>
+              <div class="seminar-card-title">생성형 AI · 지식 자산화</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            RAG/LLM 기술을 통한 기업 내부 지식 자산화 및 자연어 검색 시스템이 제조 DX의 핵심으로 부상했다. 딥플로우(Deep Flow) 모델의 시계열 데이터 증강으로 재고 비용 절감과 공급망 최적화에 실질적 성과가 확인되었다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">LLM / RAG</span>
+            <span class="s-tag">수요예측</span>
+            <span class="s-tag">공급망 AI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="topic-divider">
+
+    <!-- 3) Physical AI -->
+    <div class="seminar-topic">
+      <div class="seminar-topic-title">
+        <span class="s-num-badge">3</span>
+        Physical AI가 여는 미래 다크 팩토리
+      </div>
+      <div class="seminar-card-grid">
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-violet">🤖</div>
+            <div>
+              <div class="seminar-card-session">Session 03</div>
+              <div class="seminar-card-title">완전 자동화 생산라인</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            자율 판단과 물리적 작업을 수행하는 Physical AI 로봇이 조립·이송·검사를 통합 처리하며 완전 자동화 생산라인을 현실화하고 있다. 협동 로봇(코봇)과 AI의 결합이 유연 생산 체계의 핵심 기술로 부상하고 있으며, 사람의 개입 없이 24시간 운영되는 다크 팩토리 구현이 가시권에 들어왔다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">Physical AI</span>
+            <span class="s-tag">다크 팩토리</span>
+            <span class="s-tag">협동 로봇</span>
+            <span class="s-tag">완전 자동화</span>
+          </div>
+        </div>
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-blue">🔗</div>
+            <div>
+              <div class="seminar-card-session">미래 방향</div>
+              <div class="seminar-card-title">통합 플랫폼 (i-AX) 진화</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            AI가 특정 공정의 '도구'에 머물지 않고, 설계부터 물류까지 전 과정을 관통하는 '통합 플랫폼(i-AX)' 형태로 진화 중이다. 2031년까지 설계·가공·측정 전 공정을 데이터로 연계하는 무인화 생산 체계 구축이 업계의 공통 목표로 부상했다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">i-AX 플랫폼</span>
+            <span class="s-tag">무인화</span>
+            <span class="s-tag">데이터 연계</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="topic-divider">
+
+    <!-- 4) 물류 로봇 -->
+    <div class="seminar-topic">
+      <div class="seminar-topic-title">
+        <span class="s-num-badge">4</span>
+        물류 로봇 자율 관제 솔루션
+      </div>
+      <div class="seminar-card-grid">
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-green">📦</div>
+            <div>
+              <div class="seminar-card-session">Session 04</div>
+              <div class="seminar-card-title">AMR · AGV 자율 관제</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            AMR·AGV 기반 물류 로봇 자율 관제 플랫폼은 실시간 경로 최적화와 다중 로봇 협업 제어를 통해 물류 효율을 대폭 개선한다. 클라우드 연계 관제 시스템으로 설비 상태를 원격 모니터링하고, 돌발 상황에 즉각 대응하는 자율 의사결정 기능이 핵심 경쟁력으로 강조되었다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">AMR / AGV</span>
+            <span class="s-tag">경로 최적화</span>
+            <span class="s-tag">클라우드 관제</span>
+            <span class="s-tag">자율 의사결정</span>
+          </div>
+        </div>
+        <div class="seminar-card">
+          <div class="seminar-card-icon-row">
+            <div class="seminar-card-icon sc-amber">📡</div>
+            <div>
+              <div class="seminar-card-session">핵심 성과</div>
+              <div class="seminar-card-title">물류 자동화 기대 효과</div>
+            </div>
+          </div>
+          <div class="seminar-card-body">
+            물류 로봇을 활용한 스마트 팩토리가 실현된다면 사람의 개입 없는 다크 팩토리 운영은 물론, 비용 절감과 생산량 증대에 따른 매출 성장을 동시에 달성할 수 있다. 자율주행 로봇의 실시간 경로 재설정과 다중 협업 제어 기술이 이를 뒷받침한다.
+          </div>
+          <div class="seminar-tags">
+            <span class="s-tag">비용 절감</span>
+            <span class="s-tag">생산량 증대</span>
+            <span class="s-tag">다크 팩토리</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 5. 느낀 점 ══ -->
+  <div class="feeling-section">
+    <div class="section-title"><span class="section-num">5</span>세미나 참관 후 느낀 점</div>
+    <div class="feeling-box">
+      <div class="feeling-box-title">💡 현장에서 얻은 인사이트</div>
+      <p>
+        현장에서 다채로운 제조 기술을 직접 체험하며 회사의 스마트 팩토리 구축 방향에 대한 아이디어를 구체화하는 데 큰 도움을 받았다.
+        특히 AI 비전 기술 개발을 위해 각 회사의 장단점을 비교하며 AI 비전 최신 기술 수준을 파악할 수 있었다.
+        뉴스에서만 접했던 Physical AI 로봇을 실제로 확인하며 회사의 미래 모습을 보다 선명하게 그릴 수 있었다.<br><br>
+        물류 로봇을 활용한 스마트 팩토리가 실현된다면, 사람의 개입 없는 다크 팩토리 운영은 물론, 비용 절감과 생산량 증대에 따른 매출 성장도 자연스럽게 뒤따를 것으로 확신하게 되었다.<br><br>
+        모든 솔루션의 전제 조건은 <strong>데이터 연계</strong>였으며, 사내에 파편화된 제조 및 공정 데이터를 표준화하는 작업이 AX 전환의 선행 과제임을 절감하였다.
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ 푸터 ══ -->
+  <div class="footer">
+    <span>AW2026 스마트 제조혁신 산업전 · 참관 보고서 · 2026년 3월</span>
+    <span>Confidential · Internal Use Only</span>
+  </div>
+
+</div>
+</body>
+</html>
